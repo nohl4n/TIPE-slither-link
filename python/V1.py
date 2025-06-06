@@ -1,12 +1,8 @@
 import matplotlib.pyplot as plt
+import random as r
 
-def grid (n,m):
-    G=[[None]*n]*m
-    L=[[0]*n]*(m+1)
-    C=[[0]*(n+1)]*m
-    
-    return G,L,C
-    
+#rule of the game
+
 def Rule_1 (M):
     G,L,C = M
     n,m = len(G[0]),len(G)
@@ -79,6 +75,25 @@ def Rule_2_1 (M):
     
     
     return G
+
+# générer Grid
+
+def grid (n,m):
+    G=[[None]*n]*m
+    L=[[0]*n]*(m+1)
+    C=[[0]*(n+1)]*m
+    
+    return G,L,C
+    
+# générer un cycle V1
+
+def unicité_map (M)
+
+def map (M):
+    G,L,C = M
+    
+
+# representer grid
     
 def draw_grid(M):
 
@@ -122,6 +137,3 @@ def draw_grid(M):
     ax.set_aspect('equal')
     plt.gca().invert_yaxis()
     plt.show()
-
-
-
