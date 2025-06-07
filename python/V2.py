@@ -100,75 +100,120 @@ def generate_2(n,m,r):
 #3
 def Breakable(M,i,j):
 
-    C = cylce(M,i,j)
+    C = Cycle(M,i,j)
     n = len(C)
     precedent=C[0]
     var = 0
     
-    for i in range(1,n+1):
-        if (precedent and (not C[i%n])) or ((not precedent) and C[i%n]):
+    for k in range(1,n+1):
+        if (precedent and (not C[k%n])) or ((not precedent) and C[k%n]):
             var +=1
             
-        precedent = C[i%n]
+        precedent = C[k%n]
     
-    return var <= 2
-            
-'''def critere_T(C):
-    res = False
-    if C[1][1]:
-        if C[0][1] or ((not C[0][1]) and C[2][0] and C[2][1] and C[2][2]):
-            if C[1][0] or ((not C[1][0]) and C[0][2] and C[1][2] and C[2][2]):
-                if C[1][2] or ((not C[1][2]) and C[0][0] and C[1][0] and C[2][0]):
-                    if C[2][1] or ((not C[2][1]) and C[0][0] and C[0][1] and C[0][2]):
-                        res = True
-    return res
+    return var <= 2 and Cross(M,i,j)
+    
+def Cross(M,i,j):
+    
+    n,m = len(M) , len(M[0])
 
-def critere_arc(C):
-    res = True
-    if C[1][1]:
-        if (not C[0][0]) and (not C[2][2]) and (not C[2][1]) and (not C[1][2]):
-                res = False
-        elif (not C[0][2]) and (not C[2][0]) and (not C[1][0]) and (not C[2][1]):
-            res = False
-        elif (not C[2][0]) and (not C[0][2]) and (not C[0][1]) and (not C[1][2]):
-                res = False
-        elif (not C[2][2]) and (not C[0][0]) and (not C[0][1]) and (not C[1][0]):
-                res = False
-                            
-    return res'''
+    if i==0 and j==0:
+        C =np.array([M[i][j+1],M[i+1][j]])
+                    
+    elif i==n-1 and j==0:
+        C =np.array([M[i-1][j],M[i][j+1]])
+        
+    elif i==0 and j==m-1:
+        C =np.array([M[i][j-1],M[i+1][j]])
+                              
+    elif i==n-1 and j==m-1:
+        C =np.array([M[i][j-1],M[i-1][j]])
+                    
+    elif i==0:
+        C =np.array([M[i][j-1],M[i+1][j],M[i][j+1]])
+                    
+    elif j==0:
+
+        C =np.array([M[i-1][j],M[i][j+1],M[i+1][j]])
+                    
+    elif i==n-1:
+        C =np.array([M[i][j-1],M[i-1][j],M[i][j+1]])
+                    
+    elif j==m-1:
+        C =np.array([M[i-1][j],M[i][j-1],M[i+1][j]])
+    
+    else:
+        C =np.array([M[i-1][j],M[i][j+1],M[i+1][j],M[i][j-1]])
+        
+    c=len(C)
+    return (not C[0]) or (not C[1]) or (not C[2%n]) or (not C[3%n])
     
 def Cycle(M,i,j):
 
     n,m = len(M) , len(M[0])
     
     if i==0 and j==0:
-        C =np.array(M[i][j+1],M[i+1][j+1],M[i+1][j]])
+        C =np.array([M[i][j+1],M[i+1][j+1],M[i+1][j]])
                     
     elif i==n-1 and j==0:
-        C =np.array(M[i-1][j],M[i-1][j+1],M[i][j+1]])
+        C =np.array([M[i-1][j],M[i-1][j+1],M[i][j+1]])
         
     elif i==0 and j==m-1:
-        C =np.array(M[i][j-1],M[i+1][j-1],M[i+1][j]])
+        C =np.array([M[i][j-1],M[i+1][j-1],M[i+1][j]])
                               
     elif i==n-1 and j==m-1:
-        C =np.array(M[i][j-1],M[i-1][j-1],M[i-1][j]])
+        C =np.array([M[i][j-1],M[i-1][j-1],M[i-1][j]])
                     
     elif i==0:
-        C =np.array(M[i][j-1],M[i+1][j-1],M[i+1][j],M[i+1][j+1],M[i][j+1])
+        C =np.array([M[i][j-1],M[i+1][j-1],M[i+1][j],M[i+1][j+1],M[i][j+1]])
                     
     elif j==0:
-        C =np.array(M[i-1][j],M[i-1][j+1],M[i][j+1],M[i+1][j+1],M[i+1][j])
+        C =np.array([M[i-1][j],M[i-1][j+1],M[i][j+1],M[i+1][j+1],M[i+1][j]])
                     
     elif i==n-1:
-        C =np.array(M[i][j-1],M[i-1][j-1],M[i-1][j],M[i-1][j+1],M[i][j+1])
+        C =np.array([M[i][j-1],M[i-1][j-1],M[i-1][j],M[i-1][j+1],M[i][j+1]])
                     
     elif j==m-1:
-        C =np.array(M[i-1][j],M[i-1][j-1],M[i][j-1],M[i+1][j-1],M[i+1][j])
+        C =np.array([M[i-1][j],M[i-1][j-1],M[i][j-1],M[i+1][j-1],M[i+1][j]])
     
     else:
         C =np.array([M[i-1][j-1],M[i-1][j],M[i-1][j+1],M[i][j+1],M[i+1][j+1], M[i+1][j], M[i+1][j-1],M[i][j-1]])
         
-        
+    return C
+
+def bordure(nd,nf,md,mf):
+    B=[]
+    for j in range(md,mf):
+        B.append([nd,j])
+    for i in range(nd+1,nf):
+        B.append([i,mf-1])
+    for j in range(mf-2,md-1,-1):
+        B.append([nf-1,j])
+    for i in range(nf-1,nd-1,-1):
+        B.append([i,md])
+    return B
+
+def grignotage(n,m):
+
+    L =[[True]*m]*n
+    M = np.array(L)
+    B= bordure(0,n,0,m)
+    b=len(B)
+    r.shuffle(B)
+    
+    for i in range(r.randint(0,b-1)):
+        M[B[i][0]][B[i][1]] = False
+    p = min(n,m)
+    
+    for k in range(1,p//2):
+        B= bordure(k,n-k,k,m-k)
+        r.shuffle(B)
+        b=len(B)
+        for l in range(r.randint(4*b//5,b-1)):
+            if Breakable(M,B[l][0],B[l][1]):
+                M[B[l][0]][B[l][1]] = False
+    
+    return show(M)
     
     
 
