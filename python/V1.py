@@ -87,7 +87,8 @@ def grid (n,m):
     
 # générer un cycle V1
 
-def unicité_map (M)
+def unicité_map (M):
+     return M
 
 def map (M):
     G,L,C = M
