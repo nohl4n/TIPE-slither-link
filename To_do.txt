@@ -1,0 +1,6 @@
+voici la to do list:
+
+1 - Démontrer la bonne terminaison du programme de gringnotage
+	- dans le puzzle la regle des 3 devants
+	- sur les bords a reflechir (dépend de l'horientation)
+	i
