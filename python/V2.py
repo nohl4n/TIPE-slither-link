@@ -26,6 +26,14 @@ def grignotage_rec(n,m):
             generate_rec(M,B[k][0],B[k][1],n*m)
     
     return M
+    
+def grignotage_rec2(n,m):
+
+    L =[[True]*m]*n
+    M = np.array(L)
+    generate_rec(M,n//2,m//2,n*m)
+    
+    return M
 
 def generate_rec (M,i,j,n):
     if n>0:
@@ -376,114 +384,16 @@ def Nombre_arrête(M):
                 NA[i][j]=n
     
     return NA
-                        
-def show_NA(NA):
-    
-    m,n = len(NA[0]),len(NA)
-    fig, ax = plt.subplots(figsize=(n,m))
-
-    # Tracer les points
-    for i in range(n+1):
-        for j in range(m+1):
-            ax.plot(j, n-i, 'ko', markersize=8)
-
-    # Ajouter les indices
-    for i in range(n):
-        for j in range(m):
-            if NA[-i-1][j] is not None:
-                ax.text(j+0.5, n-i-0.5, str(NA[-i-1][j]),
-                        fontsize=16, ha='center', va='center')
 
 
-    ax.set_xlim(-0.5, m+1-0.5)
-    ax.set_ylim(-0.5, n+1-0.5)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_aspect('equal')
-    plt.gca().invert_yaxis()
-    
-    fig, ax = plt.subplots()
-    img = ax.imshow(M)
-    
-    plt.show()
-    
-    
-    
-    
-
-def show_M (M):
+def show(M):
     fig, ax = plt.subplots()
     img = ax.imshow(M)
     plt.show()
     
-def show(M,NA):
+def show2(M,NA):
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
     img1 = ax1.imshow(M)
     img2 = ax2.imshow(NA)
     plt.show()
-    
-import numpy as np
-import matplotlib.pyplot as plt
-
-def plot_M_and_NA(M, NA):
-    """
-    Affiche une grille où :
-    - la couleur de fond est déterminée par la matrice booléenne `M`
-    - les valeurs de 0 à 3 sont affichées en texte dans chaque cellule selon `NA`
-    
-    Paramètres :
-    - M : np.array booléen de forme (m, n)
-    - NA : np.array de même forme (m, n) contenant 0–3, None ou np.nan
-    """
-    if M.shape != NA.shape:
-        raise ValueError("Les matrices M et NA doivent avoir la même forme.")
-    
-    fig, ax = plt.subplots()
-
-    # Affichage de M en couleur (True -> rouge, False -> blanc)
-    ax.imshow(M, cmap=plt.cm.Reds, vmin=0, vmax=1)
-
-    # Affichage des valeurs de NA dans la grille
-    for i in range(NA.shape[0]):
-        for j in range(NA.shape[1]):
-            val = NA[i, j]
-            if val is not None and not (isinstance(val, float) and np.isnan(val)):
-                ax.text(j, i, str(int(val)), va='center', ha='center', color='black', fontsize=14)
-
-    # Personnalisation des axes et de la grille
-    ax.set_xticks(np.arange(NA.shape[1]))
-    ax.set_yticks(np.arange(NA.shape[0]))
-    ax.set_xticks(np.arange(-.5, NA.shape[1], 1), minor=True)
-    ax.set_yticks(np.arange(-.5, NA.shape[0], 1), minor=True)
-    ax.grid(which='minor', color='black', linewidth=1)
-    ax.tick_params(which='both', bottom=False, left=False, labelbottom=False, labelleft=False)
-
-    plt.show()
-    
-Bite = np.array([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
-    [0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0],
-    [0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0],
-    [0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0],
-    [0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0]])
- 
-def test():
-    img   = plt.imread('matrice_d_amour.png')
-    img   = img[:, :, 0]
-    G = [[False]*100]*100
-    
-    for i in range(100):
-        for j in range(100):
-            if img[i][j] == 1:
-                G[i][j] = True
-            else:      
-                G[i][j]= False
-    return G
