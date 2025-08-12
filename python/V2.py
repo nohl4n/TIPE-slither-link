@@ -5,11 +5,6 @@ import math as m
 
 
 
-def init_Map(n,m):
-    L =[[True]*m]*n
-    M = np.array(L)
-    return M
-
 #_______________________________METHODE_RECURSIVE__________________________________
 
 def grignotage_rec(n,m):
@@ -22,7 +17,7 @@ def grignotage_rec(n,m):
     a = r.randint(1,b-1)
     
     for k in range(a):
-        if Breakable(M,B[k][0],B[k][1]):
+        if In_able(M,B[k][0],B[k][1]):
             generate_rec(M,B[k][0],B[k][1],n*m)
     
     return M
@@ -34,6 +29,15 @@ def grignotage_rec2(n,m):
     generate_rec(M,n//2,m//2,n*m)
     
     return M
+    
+def inverse(M):
+    n,m = len(M) , len(M[0])
+    for i in range(n):
+        for j in range(m):
+            if M[i][j]:
+                M[i][j] = False
+            else:
+                M[i][j] = True
 
 def generate_rec (M,i,j,n):
     if n>0:
@@ -46,12 +50,10 @@ def generate_rec (M,i,j,n):
 
     
         for k in range(r.randint(1,c-1)):
-            if Breakable(M,C[k][0],C[k][1]):
+            if In_able(M,C[k][0],C[k][1]):
                 generate_rec(M,C[k][0],C[k][1],n-1)
 
-                
-            
-            
+
 def Cross_ind(M,i,j):
     
     n,m = len(M) , len(M[0])
@@ -185,7 +187,7 @@ def generate_2(n,m,r):
     
 #3______________________________METHODE_GRIGNOTAGE_CARRE___________________________
 
-def Breakable(M,i,j):
+def In_able(M,i,j):
 
     C = Cycle(M,i,j)
     n = len(C)
@@ -286,16 +288,18 @@ def bordure(nd,nf,md,mf):
         B.append([i,md])
     return B
 
-def grignotage(M,n,m):
-
-#    L =[[True]*m]*n
-#    M = np.array(L)
+def grignotage(n,m,M = True):
+    
+    if M:
+        L=[[True]*m]*n
+        M=np.array(L)
+        
     B= bordure(0,n,0,m)
     b=len(B)
     r.shuffle(B)
     
     for i in range(r.randint(0,b-1)):
-        if Breakable(M,B[i][0],B[i][1]):
+        if In_able(M,B[i][0],B[i][1]):
             M[B[i][0]][B[i][1]] = False
     p = min(n,m)
     
@@ -304,7 +308,7 @@ def grignotage(M,n,m):
         r.shuffle(B)
         b=len(B)
         for l in range(r.randint(4*b//5,b-1)):
-            if Breakable(M,B[l][0],B[l][1]):
+            if In_able(M,B[l][0],B[l][1]):
                 M[B[l][0]][B[l][1]] = False
     
     return M
@@ -322,7 +326,7 @@ def Crack(n,m):
         W = way (B[k][0],B[k][1],i,j)
         M[B[k][0]][B[k][1]]= False
         for w in W:
-            if Breakable(M,w[0],w[1]):
+            if In_able(M,w[0],w[1]):
                 M[w[0]][w[1]]= False
                 
 
@@ -341,26 +345,19 @@ def Crack2(n,m):
         W = way2 (B[k][0],B[k][1],i,j,n,m)
         M[B[k][0]][B[k][1]]= False
         for w in W:
-            if Breakable(M,w[0],w[1]):
+            if In_able(M,w[0],w[1]):
                 M[w[0]][w[1]]= False
                 
 
     return M
     
-#___________________________________________________________________________
+#___________________projet_expenssion________________________________________
 
-
-def fissure(n,m):
-    L =[[True]*m]*n
-    M = np.array(L)
-    B= bordure(0,n,0,m)
     
-    r.shuffle(B)
-    M[B[0][0]][B[0][1]] = False
     
 #___________________Valeur_Carré_____________________________________________
 
-def Nombre_arrête(M):
+def NA(M):
     n,m = len(M) , len(M[0])
     L =[[0]*m]*n
     NA = np.array(L)
@@ -384,16 +381,77 @@ def Nombre_arrête(M):
                 NA[i][j]=n
     
     return NA
+    
+#_________________Solver_Brute_Force_________________________________________
+
+def Rule1(M,NA):
+    n,m = len(M) , len(M[0])
+    i=0
+    res = True
+    
+    while i<n and res:
+        j=0
+        while j<m and res:
+            C = Cross(M,i,j)
+            c=len(C)
+            p=0
+            if M[i][j]:
+                p= 4-c
+                for k in range(c):
+                    if not C[k]:
+                        p+=1
+                print(i,j,NA[i][j],p)
+                if NA[i][j]!=p:
+                    res = False
+    
+            if not M[i][j]:
+                for k in range(c):
+                    if C[k]:
+                        p+=1
+                print(i,j,NA[i][j],p)
+                if NA[i][j]!=p:
+                    res = False
+            j+=1
+        i+=1
+    
+    return res
+
+def Rule1_ind(M,i,j,NA):
+    res = True
+    C = Cross(M,i,j)
+    c=len(C)
+    p=0
+    if M[i][j]:
+        p= 4-c
+        for k in range(c):
+            if not C[k]:
+                p+=1
+        
+            print(i,j,NA[i][j],p)
+        
+            if NA[i][j]!=p:
+                res = False
+
+        if not M[i][j]:
+            for k in range(c):
+                if C[k]:
+                    p+=1
+            print(i,j,NA[i][j],p)
+            if NA[i][j]!=p:
+                res = False
 
 
 def show(M):
     fig, ax = plt.subplots()
     img = ax.imshow(M)
     plt.show()
-    
+
 def show2(M,NA):
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
     img1 = ax1.imshow(M)
     img2 = ax2.imshow(NA)
     plt.show()
+    
+    
+

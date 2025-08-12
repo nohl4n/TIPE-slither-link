@@ -4,3 +4,22 @@ voici la to do list:
 	- dans le puzzle la regle des 3 devants
 	- sur les bords a reflechir (dépend de l'horientation)
 	i
+	
+out_able ?
+in_able ?
+	
+nouveau test algo
+une liste de case a visiter on en choisit une aléatoire
+->	si elle est in out_able ?
+	->	si oui elle devient out et les in autour sont ajouté a la liste on rappelle l'algo
+->	sinon
+	-> 	supprimer de la liste on rappelle l'algo
+	
+autre solution
+
+il y a 106 combinaison possible non trivial
+liste de ces connexions et les possibilités de connexion 
+	créer un algo qui fait les 8 matrice de passage pour les possibilité de déplacement de centre puis continuer l'algo 
+	intérêts les puzzles ne sont plus forcément de forme carré
+	algo dessin
+	

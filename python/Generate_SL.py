@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random as r
 import math as m
+import copy as c
+from Show import show
+from _able import In_able
 
 
 
@@ -260,3 +263,141 @@ def Crack2(n,m):
                 
 
     return M
+#______________Methode_Maze_____________
+
+def init_maze(n,m):
+    M=[[0]*m]*n
+    M = np.array(M)
+    Hist = []
+    compteur = 1
+    
+    for i in range(1,n,2):
+        for j in range(1,m,2):
+            M[i][j] = compteur
+            Hist.append([i,j])
+            compteur += 1
+            
+    return M,Hist
+    
+def init_maze2(n,m,proba=0.1):
+    M=[[0]*m]*n
+    M=np.array(M)
+    compteur = 1
+    var = True
+    
+    for i in range(1,n,2):
+        for j in range(1,m-1):
+            rand = r.random()
+            if rand < proba:
+                var = not var
+                
+            if var:
+                M[i][j] = compteur
+                compteur +=1
+                var = not var
+                
+            else:
+                M[i][j] = 0
+                var = not var
+            
+    return M
+    
+def Histo(M):
+    n,m = len(M),len(M[0])
+    Hist = []
+    
+    for i in range(n):
+        for j in range(m):
+            if M[i][j] != 0:
+                Hist.append([i,j])
+    return Hist    
+    
+    
+    
+def supr_col(M,ind):
+    n,m = len(M),len(M[0])
+    M_p = [[0]*(m-1)]*n
+    
+    if j>0:
+    
+        for j in range(ind-1):
+            for i in range(n):
+                M_p[i][j] = M[i][j]
+    if j<m:
+    
+        for j in range(ind+1):
+            for i in range(n):
+                M_p[i][j] = M[i][j]
+                
+    return M_p
+    
+def supr_l(M,ind):
+    n,m = len(M),len(M[0])
+    M_p = [[0]*m]*(n-1)
+    
+    if i>0:
+    
+        for i in range(ind-1):
+            for j in range(n):
+                M_p[i][j] = M[i][j]
+    if i<n:
+    
+        for i in range(ind+1):
+            for j in range(n):
+                M_p[i][j] = M[i][j]
+                
+    return M_p
+    
+    
+    
+    
+def link(M,i,j):
+    n,m= len(M),len(M[0])
+    L = []
+    val = M[i][j]
+    if M[i][j] + M[(i+2)%n][j] != val and M[i][j] + M[(i+2)%n][j] < 2*val:
+        L.append([i+2,j])
+        
+    if M[i][j] + M[(i-2)%n][j] != val and M[i][j] + M[(i-2)%n][j] < 2*val:
+        L.append([i-2,j])
+    
+    if M[i][j] + M[i][(j+2)%m] != val and M[i][j] + M[i][(j+2)%m] < 2*val:
+        L.append([i,j+2])
+    
+    if M[i][j] + M[i][(j-2)%m] != val and M[i][j] + M[i][(j-2)%m] < 2*val:
+        L.append([i,j-2])
+        
+    return L
+    
+def generate_maze(n,m):
+    M,Hist = init_maze(n,m)
+    S=[]
+    
+    while Hist != []:
+        r.shuffle(Hist)
+        i,j = Hist[-1][0],Hist[-1][1]
+        L = link(M,i,j)
+        
+        if len(L) == 0:
+            Hist.pop()
+            
+        else:
+            r.shuffle(L)
+            
+            i_p , j_p = L[0][0],L[0][1]
+            val = M[i][j]
+            
+            M[(i+i_p)//2][(j+j_p)//2] = val
+            
+            homog(M,i_p,j_p,val)
+            
+        
+            
+    return M
+    
+def homog(M,i,j,val):
+    M[i][j] = val
+    Cross = Cross_ind(M,i,j)
+    for i_p,j_p in Cross:
+        if M[i_p][j_p] != 0 and M[i_p][j_p] != val:
+            homog(M,i_p,j_p,val)
