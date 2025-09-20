@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
 
+from Generate_SL import generate_maze
+
 def visualize_slitherlink(M, title="Slitherlink Puzzle"):
     """
     Visualise un puzzle Slitherlink à partir d'une matrice booléenne.
@@ -16,9 +18,8 @@ def visualize_slitherlink(M, title="Slitherlink Puzzle"):
     fig, ax = plt.subplots(figsize=(m*0.8, n*0.8))
     
     # Configuration de base
-    ax.set_xlim(-0.5, m-0.5)
-    ax.set_ylim(-0.5, n-0.5)
-    ax.set_aspect('equal')
+    ax.set_xlim(-1, m)
+    ax.set_ylim(-1, n)
     ax.invert_yaxis()  # Pour avoir (0,0) en haut à gauche
     
     # Dessiner la grille de points
@@ -36,10 +37,7 @@ def visualize_slitherlink(M, title="Slitherlink Puzzle"):
             if nb_edges is not None:
                 ax.text(j, i, str(nb_edges), 
                        ha='center', va='center', 
-                       fontsize=14, fontweight='bold',
-                       bbox=dict(boxstyle="round,pad=0.3", 
-                                facecolor='lightblue', 
-                                alpha=0.8))
+                       fontsize=14)
     
     # Dessiner les lignes de la solution (optionnel - pour debug)
     draw_solution_outline(ax, M)
@@ -47,7 +45,7 @@ def visualize_slitherlink(M, title="Slitherlink Puzzle"):
     # Configuration finale
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title(title, fontsize=16, fontweight='bold')
+    ax.set_title(title, fontsize=16)
     
     # Supprimer les bordures
     for spine in ax.spines.values():
@@ -98,8 +96,7 @@ def calculate_edges_needed(M, i, j):
         if current_cell != neighbor:  # Transition = arête nécessaire
             edge_count += 1
     
-    # Ne pas afficher les cellules avec 0 arêtes (optionnel)
-    return edge_count if edge_count > 0 else None
+    return edge_count
 
 def draw_solution_outline(ax, M, show_solution=False):
     """
@@ -138,8 +135,8 @@ def visualize_slitherlink_with_solution(M, title="Slitherlink avec Solution"):
     
     fig, ax = plt.subplots(figsize=(m*0.8, n*0.8))
     
-    ax.set_xlim(-0.5, m-0.5)
-    ax.set_ylim(-0.5, n-0.5)
+    ax.set_xlim(-1, m)
+    ax.set_ylim(-1, n)
     ax.set_aspect('equal')
     ax.invert_yaxis()
     
@@ -155,17 +152,14 @@ def visualize_slitherlink_with_solution(M, title="Slitherlink avec Solution"):
             if nb_edges is not None:
                 ax.text(j, i, str(nb_edges), 
                        ha='center', va='center', 
-                       fontsize=14, fontweight='bold',
-                       bbox=dict(boxstyle="round,pad=0.3", 
-                                facecolor='lightblue', 
-                                alpha=0.8))
+                       fontsize=14)
     
     # Solution en rouge
     draw_solution_outline(ax, M, show_solution=True)
     
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title(title, fontsize=16, fontweight='bold')
+    ax.set_title(title, fontsize=16)
     
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -191,7 +185,7 @@ def test_visualizer():
     # Test avec vos fonctions (si disponibles)
     try:
         print("Test avec grignotage_rec...")
-        M_rec = grignotage_rec(8, 6)
+        M_rec = generate_maze(11, 11)
         visualize_slitherlink(M_rec, "Générateur Récursif")
         visualize_slitherlink_with_solution(M_rec, "Générateur Récursif avec Solution")
     except NameError:

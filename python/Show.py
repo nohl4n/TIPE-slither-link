@@ -23,6 +23,11 @@ def show_anim(L, interval=200):
 
 def show(M):
     fig, ax = plt.subplots()
+    img = ax.imshow(M,cmap='gray')
+    plt.show()
+    
+def showb(M):
+    fig, ax = plt.subplots()
     img = ax.imshow(M)
     plt.show()
 

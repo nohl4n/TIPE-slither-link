@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random as r
-import math as m
 import copy as c
+import sys
 from Show import show
-from _able import In_able
 
+#_____________AUGMENTE_LA_RECURSION_DEPTH____________________
+
+sys.setrecursionlimit(10000)
 
 
 #_______________________________METHODE_RECURSIVE__________________________________
@@ -280,25 +282,27 @@ def init_maze(n,m):
     return M,Hist
     
 def init_maze2(n,m,proba=0.1):
-    M=[[0]*m]*n
-    M=np.array(M)
-    compteur = 1
-    var = True
     
-    for i in range(1,n,2):
-        for j in range(1,m-1):
+    M=[[0]*(2*m)]*(2*n)
+    M=np.array(M)
+    
+    for i in range(1,2*n,2):
+        for j in range(1,2*m,2):
             rand = r.random()
             if rand < proba:
-                var = not var
+                M[i][j] = 1
                 
-            if var:
-                M[i][j] = compteur
-                compteur +=1
-                var = not var
+    show(M)
+    M = M.tolist()
+    print(M)
                 
-            else:
-                M[i][j] = 0
-                var = not var
+    for k in range(2*n,n,-1):
+        supr_l(M,r.randint(0,k-1))
+        show(M)
+        
+    for k in range(2*m,m,-1):
+        supr_col(M,r.randint(0,k-1))
+        show(M)
             
     return M
     
@@ -316,37 +320,29 @@ def Histo(M):
     
 def supr_col(M,ind):
     n,m = len(M),len(M[0])
-    M_p = [[0]*(m-1)]*n
     
-    if j>0:
-    
-        for j in range(ind-1):
-            for i in range(n):
-                M_p[i][j] = M[i][j]
-    if j<m:
-    
-        for j in range(ind+1):
-            for i in range(n):
-                M_p[i][j] = M[i][j]
-                
-    return M_p
+    for i in range(n):
+        for j in range(ind,m-1):
+        
+            M[i][j] , M[i][j+1] = M[i][j+1] , M[i][j]
+            
+    for i in range(n):
+        print(M)
+        M[i].pop()
+
+   
+    return M
     
 def supr_l(M,ind):
-    n,m = len(M),len(M[0])
-    M_p = [[0]*m]*(n-1)
+    n= len(M)
     
-    if i>0:
+    for i in range(ind,n-1):
+        
+        M[i],M[i+1] = M[i+1],M[i]
     
-        for i in range(ind-1):
-            for j in range(n):
-                M_p[i][j] = M[i][j]
-    if i<n:
-    
-        for i in range(ind+1):
-            for j in range(n):
-                M_p[i][j] = M[i][j]
+    M.pop()
                 
-    return M_p
+    return M
     
     
     
@@ -370,28 +366,35 @@ def link(M,i,j):
     return L
     
 def generate_maze(n,m):
-    M,Hist = init_maze(n,m)
+    
+    M,Hist= init_maze(n,m)
+
+    h = len(Hist)
+    r.shuffle(Hist)
     S=[]
     
-    while Hist != []:
-        r.shuffle(Hist)
+    while h != 0:
+        ind = r.randint(0,h-1)
+        Hist[ind][0],Hist[-1][0] = Hist[-1][0],Hist[ind][0]
+        Hist[ind][1],Hist[-1][1] = Hist[-1][1],Hist[ind][1]
         i,j = Hist[-1][0],Hist[-1][1]
         L = link(M,i,j)
         
         if len(L) == 0:
             Hist.pop()
+            h-=1
             
         else:
             r.shuffle(L)
             
             i_p , j_p = L[0][0],L[0][1]
             val = M[i][j]
-            
+            Hist.append([(i+i_p)//2,(j+j_p)//2])
+            h+=1
             M[(i+i_p)//2][(j+j_p)//2] = val
             
             homog(M,i_p,j_p,val)
-            
-        
+
             
     return M
     
