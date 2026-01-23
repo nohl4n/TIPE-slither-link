@@ -44,7 +44,7 @@ import sys
 
 #_____________AUGMENTE_LA_RECURSION_DEPTH
 
-sys.setrecursionlimit(10000)
+sys.setrecursionlimit(100000)
 
 
 """
@@ -1713,15 +1713,18 @@ def rec_brut_SL(M, Na_M, Na, i, j, Val):
     # avancer dans l'ordre des cases : (i,j) -> next_i, next_j
     # calcule next indices
     next_i, next_j = i, j
-    if j < m - 1:
-        next_i, next_j = i, j + 1
-    elif i < n - 1:
-        next_i, next_j = i + 1, 0
-    else:
+    if j > 0 and i < n-1:
+        next_i, next_j = i+1, j-1
+
+    elif i==n-1 and j == m-1:
         # dernière case ; on a déjà testé l'égalité, donc pas de suite
         # restore et return
         M[i][j] = prev
         return
+        
+    else:
+        next_i,next_j = max([0,i-(m-1-j-1)]), min([i+1,m-1])
+        
 
     # obtenir états possibles pour la prochaine case
     E = états_possible(M, Na_M, Na, next_i, next_j)
@@ -1867,3 +1870,49 @@ def condition_mettre_in(M,Na_M,Na,i,j):
     else :
         return val_si_in - Na[i][j] >= 0 and val_si_in - Na[i][j] <= 2
 
+
+def diag_test(n,m):
+    M = [[0]*m for _ in range(n)]
+    diag_test_rec(M,n*m,0,0,n,m)
+    
+def diag_test_rec(M,ind,i,j,n,m):
+    M[i][j] = ind
+    print(i,j)
+    if ind == 0:
+        return M
+    else:
+        if j > 0 and i < n-1:
+            next_i, next_j = i+1, j-1
+
+        elif i==n-1 and j == m-1:
+            print('FINI',M)
+            for row in M:
+                print(row)
+            return M
+        
+        else:
+            next_i,next_j = max([0,i-(m-1-j-1)]), min([i+1,m-1])
+            
+    
+    
+    diag_test_rec(M,ind-1,next_i,next_j,n,m)
+    
+import time 
+def graphique():
+    L = []
+    for i in range(10,100,10) :
+        tot=0
+        for _ in range (5) :
+            start = time.time()
+            M= solve_SL(Nombre_Arrete(grignotage_rec(i,i)).tolist())
+            end = time.time()
+            tot += end-start
+        L.append(tot/5)
+    
+    
+    plt.plot(L)
+    plt.ylabel('some numbers')
+    plt.show()
+
+    
+    return L

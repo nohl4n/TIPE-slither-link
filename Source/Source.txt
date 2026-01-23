@@ -8,4 +8,8 @@ Slitherlink by ZDDs
 https://www.mdpi.com/1999-4893/5/2/176
 
 
+Référence de toute les techniques usuelles de solving pour les humains
+https://jonathanolson.net/slitherlink/#introduction-to-solving
+
+
 

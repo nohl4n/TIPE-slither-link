@@ -1,4 +1,3 @@
-        
 class SolutionFound(Exception):
     pass
 
@@ -52,7 +51,11 @@ def solve_SL(Na):
     try:
         # on tente d'abord en posant la première case à 1 puis 2
         if Na[0][0] >= 2:
-            rec_brut_SL(M, modifie_Na_M(M,Na_M,0,0), Na, 0, 0, True)
+            Na_M,restore = modifie_Na_M(M,Na_M,0,0)
+            
+            rec_brut_SL(M, Na_M, Na, 0, 0, True)
+            
+            Na_M = restore_Na_M(Na_M,restore)
         if Na[0][0] <= 2:
             rec_brut_SL(M, Na_M, Na, 0, 0, False)
         print("Aucune solution trouvée.")
@@ -78,41 +81,39 @@ def rec_brut_SL(M, Na_M, Na, i, j, Val):
         raise SolutionFound
 
     # avancer dans l'ordre des cases : (i,j) -> next_i, next_j
+    # calcule next indices
+    next_i, next_j = i, j
     if j < m - 1:
-        # on explore la case suivante sur la même ligne (i, j+1)
-        E = états_possible(M,Na_M,Na,i,j+1)
-        
-        if E == [True,False] :
-            rec_brut_SL(M,modifie_Na_M(M,Na_M,i,j+1), Na, i, j+1, True)
-            rec_brut_SL(M,Na_M, Na, i, j+1, False)
-            
-        elif E == [True]:
-            rec_brut_SL(M,modifie_Na_M(M,Na_M,i,j+1), Na, i, j+1, True)
-            
-        elif E == [False]:
-            rec_brut_SL(M, Na_M, Na, i, j+1, False)
-        
-
+        next_i, next_j = i, j + 1
     elif i < n - 1:
-        # fin de colonne : on passe à la ligne suivante, première colonne
-        E = états_possible(M,Na_M,Na,i+1,0)
+        next_i, next_j = i + 1, 0
+    else:
+        # dernière case ; on a déjà testé l'égalité, donc pas de suite
+        # restore et return
+        M[i][j] = prev
+        return
+
+    # obtenir états possibles pour la prochaine case
+    E = états_possible(M, Na_M, Na, next_i, next_j)
+
+    # explore selon ce qui est possible (tester présence plutôt qu'égalité stricte)
+    if True in E:
+        #modifie Na
+        Na_M,restore = modifie_Na_M(M,Na_M,next_i,next_j)
         
-        if E == [True,False] :
-            rec_brut_SL(M,modifie_Na_M(M,Na_M,i+1,0), Na, i+1, 0, True)
-            rec_brut_SL(M,Na_M, i+1, 0, False)
-            
-        elif E == [True]:
-            rec_brut_SL(M,modifie_Na_M(M,Na_M,i+1,0), Na, i+1, 0, True)
-            
-        elif E == [False]:
-            rec_brut_SL(M, Na_M, Na, i+1, 0, False)
-    # sinon nous sommes à la dernière case et on a déjà testé la solution
+        rec_brut_SL(M, Na_M, Na, next_i, next_j, True)
+        
+        # restore l'ancienne valeur de Na_M
+        Na_M = restore_Na_M(Na_M,restore)
+    if False in E:
+        rec_brut_SL(M, Na_M, Na, next_i, next_j, False)
 
     # backtrack : restaurer l'ancienne valeur avant de retourner
     M[i][j] = prev
 
 
 def modifie_Na_M(M,Na_M,i,j):
+    restore = []
     C = Croix_ind(M,i,j)
     
     val = 0
@@ -120,12 +121,21 @@ def modifie_Na_M(M,Na_M,i,j):
     
     for ic,jc in C:
         if M[ic][jc] == True :
+            restore.append([ic,jc, Na_M[ic][jc]])
             Na_M[ic][jc] = Na_M[ic][jc] - 1
         else :
+            restore.append([ic,jc, Na_M[ic][jc]])
             Na_M[ic][jc] = Na_M[ic][jc] + 1
             val += 1
     
+    restore.append([i,j,Na_M[i][j]])
     Na_M[i][j] = val + (4 -c)
+    return Na_M,restore
+    
+def restore_Na_M(Na_M,restore):
+    for i,j,val in restore:
+        Na_M[i][j] = val
+        
     return Na_M
             
             
@@ -134,34 +144,34 @@ def modifie_Na_M(M,Na_M,i,j):
 def états_possible(M,Na_M,Na,i,j):
     E = []
     if i == 0 :
-        #if j == 0 or condition_droite(M,Na_M,Na,i,j) == "pas de condition":
-            #if condition_mettre_in(M,Na_M,Na,i,j):
-        E.append(True)
-            #if condition_mettre_out(M,Na_M,Na,i,j):
-        E.append(False)
-        #elif condition_droite(M,Na_M,Na,i,j) == True:
-            #if condition_mettre_in(M,Na_M,Na,i,j):
-            #E.append(True)
-        #else : 
-            #if condition_mettre_out(M,Na_M,Na,i,j):
-            #E.append(False)
+        if j == 0 or condition_droite(M,Na_M,Na,i,j) == "pas de condition":
+            if condition_mettre_in(M,Na_M,Na,i,j):
+                E.append(True)
+            if condition_mettre_out(M,Na_M,Na,i,j):
+                E.append(False)
+        elif condition_droite(M,Na_M,Na,i,j) == True:
+            if condition_mettre_in(M,Na_M,Na,i,j):
+                E.append(True)
+        else : 
+            if condition_mettre_out(M,Na_M,Na,i,j):
+                E.append(False)
                 
     else :
         if condition_bas(M,Na_M,Na,i,j) == True :
-            #if j == 0 or condition_droite(M,Na_M,Na,i,j) == "pas de condition":
-                #if condition_mettre_in(M,Na_M,Na,i,j):
-            E.append(True)
-            #elif condition_droite(M,Na_M,Na,i,j) == True:
-                #if condition_mettre_in(M,Na_M,Na,i,j):
-                #E.append(True)
+            if j == 0 or condition_droite(M,Na_M,Na,i,j) == "pas de condition":
+                if condition_mettre_in(M,Na_M,Na,i,j):
+                    E.append(True)
+            elif condition_droite(M,Na_M,Na,i,j) == True:
+                if condition_mettre_in(M,Na_M,Na,i,j):
+                    E.append(True)
         
         else : 
-            #if j == 0 or condition_droite(M,Na_M,Na,i,j) == "pas de condition":
-                #if condition_mettre_out(M,Na_M,Na,i,j):
-            E.append(False)
-            #elif condition_droite(M,Na_M,Na,i,j) == False:
-                #if condition_mettre_out(M,Na_M,Na,i,j):
-                #E.append(False)
+            if j == 0 or condition_droite(M,Na_M,Na,i,j) == "pas de condition":
+                if condition_mettre_out(M,Na_M,Na,i,j):
+                    E.append(False)
+            elif condition_droite(M,Na_M,Na,i,j) == False:
+                if condition_mettre_out(M,Na_M,Na,i,j):
+                    E.append(False)
                     
     return E
         

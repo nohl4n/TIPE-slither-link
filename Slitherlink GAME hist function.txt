@@ -1,0 +1,122 @@
+====================
+| Slitherlink GAME |
+====================
+
+# _____________BIBLIOTHEQUE
+-> matplotlib.pyplot as plt
+-> numpy as np
+-> random as r
+-> copy as c
+-> sys
+
+~~~~~~~~~~~~~~~~~~~
+I - Generation_puzzle
+~~~~~~~~~~~~~~~~~~~
+
+#__________________Grignotage_récursif
+Croix(M,i,j) -> C
+Contour(M,i,j) -> C
+modifiable(M,i,j) -> bool
+grignotage_rec(n, m) -> M  
+grignotage_rec_centre(n, m) -> M  
+inverse(M) -> M
+generate_rec (M, i, j, n) -> rec               
+generate_rec_list(M,i,j,L,n) -> rec
+Croix_ind(M, i, j)   -> C
+
+#_______________Bruit_Chemins
+bruit (n, m, r) -> M, H
+sign(x) ->  - 1 if x < 0 else 1
+chemin (i1,  j1,  i2,  j2) -> W
+    
+#____tRAveEau________
+chemin_complexe (i1,  j1,  i2,  j2,  n,  m) -> W
+generate_bruit_chemin(n,  m,  r) -> M  
+generate_chemins(n, m) -> M 
+generate_chemins_complexes(n, m) -> M
+
+#_________________METHODE_GRIGNOTAGE_CARRE
+bordure(nd, nf, md, mf) -> B
+grignotage_carré(M, n, m) -> M
+
+#______________Methode_Maze
+init_maze(n, m) -> M, Hist
+init_maze2(n, m, proba=0.1) -> M    
+Histo(M) -> Hist
+supr_col(M, ind) -> M
+supr_l(M, ind) -> M
+link(M, i, j) -> L
+generate_maze(n, m) -> M
+homog(M, i, j, val) -> rec
+
+#________________Methode_Opti
+generate_test(n,m)-> M
+List_modifiable(M)-> L
+List_bout(M) -> L
+
+~~~~~~~~~~~~~~~~~~~
+II - Etudes Dénombrement
+~~~~~~~~~~~~~~~~~~~
+
+List_3x3() -> L
+List_nxm(n,m) -> L
+    
+#____________Filtres
+filtre_equiv(L) 
+filtre_puzzle(L) 
+filtre_diag(L) 
+filtre_Point(L,marge) 
+filtre_nombre_modifiable(L,mini,maxi)    
+
+#___________Test_de_bon_retour_pour_les_critères
+in_pas_diag(M) -> bool
+List_3x3_able()
+List_3x3_puzzle() 
+nb_in(M) -> nb
+List_in(L) -> L_in
+Sort_nb_in(L,L_in) -> np.array(L_sort)
+Sort_nb_modif(L,mini,maxi) -> np.array(L_sort)
+Tri(L) -> Sort(L,List_in(L))
+Ligne(M,i) -> M[i]
+Colonne(M,j) -> C
+Moyenne(L,M) -> moy
+Point(M) -> pts
+
+~~~~~~~~~~~~~~~~~~~
+III - Verifier puzzle
+~~~~~~~~~~~~~~~~~~~
+
+#___________Règles
+Rule1(M,NA) -> res
+Rule1_ind(M,i,j,NA) -> bool             
+Nombre_Arrete(M) -> NA
+    
+#_______________Règles équivalentes 2 couleurs
+Hist(M,i,j,L)  -> Hist
+Couche_ext(M) -> Couche
+Verif(M) -> bool
+
+~~~~~~~~~~~~~~~~~~~
+IV - Show puzzle
+~~~~~~~~~~~~~~~~~~~
+
+show(M) 
+show_gris(M) 
+show_2(M,NA) 
+show_n(L,n,m) 
+show_anim(L, interval=200) 
+
+~~~~~~~~~~~~~~~~~~~
+V - Solve puzzle
+~~~~~~~~~~~~~~~~~~~
+
+List_puzzle(n,m) 
+Brut_force(Na) -> solution
+Test(Na,L) -> solution if found
+
+"""-----------------------------------------"""
+Solve_par_essaie_modifie(N,tentative = 100) 
+NA_ind(M,i,j) -> nb
+List_random(n) -> L
+List_not_random(n)  pas complet
+Score(M,Na,n,m) -> s
