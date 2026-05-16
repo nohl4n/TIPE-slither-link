@@ -1,125 +1,217 @@
-TIPE – Slither Link
+# TIPE – Slither Link
 
-Ce dépôt regroupe les outils développés dans le cadre de mon TIPE (2025‑2026) sur le Slither Link (ou Slitherlink).
-Le projet contient :
+> Projet TIPE 2025‑2026 — **Nohlan SAUCET**  
+> Résolution et génération de puzzles **Slitherlink** par méthodes algorithmiques (backtracking, SMT/Z3).
 
-    un visualiseur interactif (Pygame) permettant de créer, modifier et jouer à des grilles de Slither Link ;
+---
 
-    une bibliothèque Python complète pour générer, vérifier, résoudre et analyser des puzzles Slither Link.
+## Le puzzle Slitherlink
 
-📁 Contenu du dépôt
-text
+Le Slitherlink est un puzzle logique japonais (Nikoli) : relier des points d'une grille pour former **une unique boucle fermée**, en respectant les indices numériques qui indiquent combien d'arêtes entourent chaque cellule.
 
-TIPE-slither-link/
-├── pygame_visualiser.py      # Interface interactive (éditeur + mode jeu)
-├── SlitherLink.py            # Module complet : génération, vérification, résolution, affichage
-├── images/                   # (dossier) captures d’écran, illustrations
-└── sources/                  # (dossier) articles PDF utilisés pour la recherche
+| Grille vierge | Solution |
+|:---:|:---:|
+| ![Grille non résolue](images/intro_unsolved.png) | ![Grille résolue](images/intro_solved.png) |
 
-🔧 Dépendances
+Exemple de grande instance résolue :
 
-Les deux scripts nécessitent les bibliothèques suivantes (Python 3.8+) :
-bash
+![Grand exemple résolu](images/exemple_slitherlink.png)
 
+---
+
+## Structure du projet
+
+```
+TIPE/
+├── python/
+│   ├── SlitherLink.py            # Module principal : génération, vérification, résolution
+│   └── pygame_visualiseur.py     # Interface interactive (éditeur + mode jeu)
+├── images/                       # Captures, graphiques, illustrations
+├── Source/                       # Articles scientifiques de référence (PDF)
+└── README.md
+```
+
+---
+
+## Modélisation
+
+### Représentation de la grille
+
+Une grille n×n est représentée comme une matrice d'indices. Les arêtes entre cellules forment la boucle solution. Chaque cellule porte un indice (0–3) indiquant le nombre d'arêtes qui la bordent, ou `-1` si l'indice est masqué.
+
+![Modélisation du puzzle](images/modelisation_puzzle.png)
+
+### Modèle 2 couleurs
+
+La contrainte de boucle unique est vérifiée grâce à un **modèle de 2-coloration** : les cellules intérieures à la boucle reçoivent une couleur, les cellules extérieures une autre. Une arête appartient à la boucle si et seulement si elle sépare deux cellules de couleurs différentes.
+
+![Modèle 2 couleurs](images/couleur_chiffre.png)
+
+Ce modèle permet de reformuler la vérification de validité de façon efficace, sans parcourir explicitement le chemin.
+
+---
+
+## Génération de puzzles
+
+Plusieurs méthodes de génération ont été développées et comparées.
+
+### Grignotage récursif
+
+On part d'une boucle pleine (toutes les cellules intérieures) et on retire des cellules une à une de façon récursive en maintenant la validité de la boucle.
+
+![Étapes du grignotage récursif](images/grignotage_rec.png)
+
+### Grignotage carré + crevasse
+
+Variante qui retire des blocs carrés puis creuse des « crevasses » pour complexifier la forme.
+
+![Grignotage carré + crevasse](images/grignotage+crevasse.png)
+
+### Taux de cases modifiables
+
+Un critère de **modifiabilité** mesure la difficulté générée : une case est modifiable si son indice peut varier sans invalider la solution. Le tableau ci-dessous montre l'évolution du nombre de cases modifiables selon les étapes de génération sur une grille 4×4 :
+
+| nb_modif 5 | nb_modif 7 | nb_modif 9 | nb_modif 10 |
+|:---:|:---:|:---:|:---:|
+| ![](images/4x4%20nb_modif%205.png) | ![](images/4x4%20nb_modif%207.png) | ![](images/4x4%20nb_modif%209.png) | ![](images/4x4%20nb_modif%2010.png) |
+
+---
+
+## Résolution
+
+### Backtracking intelligent (`solve_SL_all`)
+
+Algorithme de backtracking avec **heuristiques** : propagation de contraintes et élagage précoce. Trouve toutes les solutions d'un puzzle.
+
+![Résolution n×n — temps en fonction de la taille](images/solve_nxn.png)
+
+### Solveur SMT — Z3 (`z3_solver`)
+
+Reformulation du puzzle en un problème de **satisfaisabilité modulo théories** (SMT). Les contraintes (indices, boucle unique) sont encodées comme des formules logiques et soumises au solveur Z3.
+
+### Comparaison Backtracking vs Z3
+
+Les benchmarks ci-dessous comparent les deux méthodes en fonction de la taille de la grille et du taux de cases non-indicées :
+
+| 0 % masqués | 20 % masqués |
+|:---:|:---:|
+| ![Z3 vs BT — 0%](images/Z3_vs_solve_SL_all_0.png) | ![Z3 vs BT — 20%](images/Z3_vs_solve_SL_all_02.png) |
+
+| 25 % masqués | 50 % masqués |
+|:---:|:---:|
+| ![Z3 vs BT — 25%](images/Z3_vs_Solve_SL_all_025.png) | ![Z3 vs BT — 50%](images/Z3_vs_solve_SL_all_050.png) |
+
+> **Conclusion** : Z3 (rouge) reste quasi-constant quelle que soit la taille, tandis que le backtracking (bleu) croît exponentiellement — surtout sur les grilles entièrement indicées.
+
+---
+
+## Visualiseur interactif (Pygame)
+
+```bash
+python pygame_visualiseur.py
+```
+
+| Mode | Touche / action | Effet |
+|---|---|---|
+| **Édition** | `← ↑ ↓ →` | Déplacer la case sélectionnée |
+| | `0…4` | Entrer un indice dans la case |
+| | `5` ou `?` | Mettre une case sans indice (`-1`) |
+| | `C` | Changer la couleur de fond |
+| | `E` | Passer en mode jeu |
+| | `G` | Afficher/masquer le quadrillage |
+| **Jeu** | clic gauche | Tracer une arête noire |
+| | clic droit | Tracer une croix rouge (arête interdite) |
+| | clic milieu | Effacer l'arête |
+| | `E` | Revenir en mode édition |
+
+---
+
+## Installation
+
+**Python 3.8+** requis.
+
+```bash
 pip install pygame matplotlib numpy z3-solver
+```
 
-    pygame – pour l’interface interactive
+| Bibliothèque | Rôle |
+|---|---|
+| `pygame` | Interface interactive |
+| `matplotlib` / `numpy` | Affichage et calculs matriciels |
+| `z3-solver` | Résolution par contraintes SMT |
 
-    matplotlib / numpy – pour l’affichage et les calculs matriciels
+---
 
-    z3-solver – pour la résolution par contraintes (optionnel, mais recommandé)
+## Principales fonctions (`SlitherLink.py`)
 
-🎮 Utilisation du visualiseur Pygame
+### Génération
+| Fonction | Description |
+|---|---|
+| `grignotage_rec(n, m)` | Génération par grignotage récursif |
+| `grignotage_carre(n, m)` | Génération par blocs carrés |
+| `generate_chemins(n, m)` | Génération par chemin aléatoire |
+| `generate_maze(n, m)` | Génération type labyrinthe |
 
-Lance l’éditeur interactif :
-bash
+### Vérification
+| Fonction | Description |
+|---|---|
+| `Verif(M)` | Teste si M forme une boucle unique valide |
+| `Nombre_Arrete(M)` | Calcule la matrice des indices à partir d'une solution |
 
-python pygame_visualiser.py
+### Résolution
+| Fonction | Description |
+|---|---|
+| `solve_SL_all(Na)` | Backtracking — toutes les solutions |
+| `z3_solver(Na)` | Résolution SMT avec Z3 |
 
-Fonctionnalités
-Mode	Touche / action	Effet
-Édition (par défaut)	← ↑ ↓ →	déplacer la case sélectionnée
-	0…9	entrer un chiffre (0‑4) dans la case
-	5 ou ?	mettre un point d’interrogation (-1)
-	C	changer la couleur de fond de la case
-	E	passer en mode jeu
-	G	afficher/masquer le quadrillage (points vs lignes)
-	champ Lignes / Colonnes + bouton Appliquer	redimensionner la grille
-Jeu	clic gauche	tracer une arête noire
-	clic droit	tracer une croix rouge (arête interdite)
-	clic milieu	effacer l’arête
-	E	revenir en mode édition
+### Affichage
+| Fonction | Description |
+|---|---|
+| `show(M)` | Affiche une grille |
+| `show_n(liste)` | Affiche plusieurs grilles côte à côte |
+| `show_anim(liste)` | Animation d'une séquence de grilles |
 
-    ⚠️ La validation des règles et la recherche de solution ne sont pas encore intégrées au visualiseur – elles sont disponibles dans le module SlitherLink.py.
+---
 
-📚 Bibliothèque SlitherLink.py
+## Exemple d'utilisation
 
-Ce module contient toutes les fonctions scientifiques du projet.
-Principales fonctionnalités
+```python
+from SlitherLink import grignotage_rec, solve_SL_all, show, Nombre_Arrete
 
-    Génération de puzzles
-    grignotage_rec(), grignotage_carré(), generate_chemins(), generate_maze(), etc.
+# Générer une solution aléatoire 6x6
+M = grignotage_rec(6, 6)
 
-    Vérification de validité
-    Verif(M) – test si une matrice booléenne forme une boucle unique (modèle 2 couleurs).
-    Nombre_Arrete(M) – calcule la matrice des indices à partir d’une solution.
-
-    Résolution
-
-        solve_SL_all(Na) : recherche toutes les solutions par backtracking intelligent.
-
-        z3_solver(Na) : résolution par solveur SAT/SMT (Z3).
-
-    Analyse & dénombrement
-    Filtres (diagonales, symétries, nombre de cases modifiables…), étude des petites grilles 3×3, etc.
-
-    Affichage
-    show(), show_n(), show_anim() pour visualiser des matrices ou des séquences.
-
-Exemple d’utilisation
-python
-
-from SlitherLink import generer, solve_SL_all, show
-
-# Générer un puzzle aléatoire 6x6 avec 40% de cases masquées (-1)
-Na = generer(6, 6, p=0.4)
+# Calculer la grille d'indices
+Na = Nombre_Arrete(M)
 
 # Résoudre
 solutions = solve_SL_all(Na)
 print(f"{len(solutions)} solution(s) trouvée(s)")
 
-# Afficher la première solution
+# Afficher
 if solutions:
     show(solutions[0])
+```
 
-🖼️ Captures d’écran
+---
 
-(Tu peux ajouter ici quelques images issues du dossier images/)
-👤 Auteur
+## Sources
 
-Nohlan SAUCET – Projet TIPE 2025‑2026
-Lycée / CPGE (à compléter)
-📖 Références
+Les articles scientifiques utilisés sont disponibles dans `Source/` :
 
-Les articles scientifiques consultés sont disponibles dans le dossier sources/.
-Quelques liens utiles :
+- Résolution du Slitherlink par contraintes (ISSN algorithm)
+- Complexité NP-complète du Slitherlink sur grilles hexagonales
+- Implémentation FPGA d'un solveur SMT
+- Génération de puzzles avec contrainte de connectivité (Gerhard van der Knijff)
+- Algorithmes de résolution de puzzles logiques
 
-    Règles du Slither Link (Nikoli)
+---
 
-    Article sur la complexité du Slither Link (Wikipedia)
+## État du projet
 
-🧪 État du projet
-
-    Visualiseur interactif (Pygame)
-
-    Génération de grilles (multi‑méthodes)
-
-    Backtracking complet (trouve toutes les solutions)
-
-    Solveur Z3
-
-    Interface de résolution intégrée au visualiseur
-
-    Benchmark des méthodes de génération
-
-Ce dépôt est en cours d’évolution dans le cadre d’un projet personnel et scolaire.
+- [x] Visualiseur interactif (Pygame)
+- [x] Génération de grilles (multi-méthodes)
+- [x] Backtracking complet (toutes les solutions)
+- [x] Solveur Z3
+- [x] Benchmarks comparatifs
+- [ ] Interface de résolution intégrée au visualiseur
