@@ -81,9 +81,9 @@ Un critère de **modifiabilité** mesure la difficulté générée : une case es
 
 ### Backtracking intelligent (`solve_SL_all`)
 
-Algorithme de backtracking avec **heuristiques** : propagation de contraintes et élagage précoce. Trouve toutes les solutions d'un puzzle.
+Algorithme de backtracking original : propagation de contraintes et élagage précoce. Trouve toutes les solutions d'un puzzle. Lorsque le puzzle fournit l'ensemble des indices, l'algorithme implémenté est capable de prouesse en resolvant des puzzles slitherlink de 1000 par 1000 !
 
-![Résolution n×n — temps en fonction de la taille](images/solve_nxn.png)
+![Résolution n×n — temps en fonction de la taille](images/complexité.png)
 
 ### Solveur SMT — Z3 (`z3_solver`)
 
@@ -101,7 +101,7 @@ Les benchmarks ci-dessous comparent les deux méthodes en fonction de la taille 
 |:---:|:---:|
 | ![Z3 vs BT — 25%](images/Z3_vs_Solve_SL_all_025.png) | ![Z3 vs BT — 50%](images/Z3_vs_solve_SL_all_050.png) |
 
-> **Conclusion** : Z3 (rouge) reste quasi-constant quelle que soit la taille, tandis que le backtracking (bleu) croît exponentiellement — surtout sur les grilles entièrement indicées.
+> **Conclusion** : Le Backtracking original (rouge) implémenté dans ce github est un excellent solver lorsque le nombre d'indice est grand dans le puzzle une implementation z3 (bleu) résiste cependant bien mieux au nombre d'indice qui diminue.
 
 ---
 
