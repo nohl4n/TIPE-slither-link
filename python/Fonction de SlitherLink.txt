@@ -14,22 +14,23 @@ I - Generation_puzzle
 ~~~~~~~~~~~~~~~~~~~
 
 #__________________Grignotage_récursif
-Croix(M,i,j) -> C
-Contour(M,i,j) -> C
 modifiable(M,i,j) -> bool
+Croix(M,i,j) -> C
+Croix_ind(M, i, j)   -> C
+Contour(M,i,j) -> C
+Contour_ind(M,i,j) -> C
 grignotage_rec(n, m) -> M  
 grignotage_rec_centre(n, m) -> M  
 inverse(M) -> M
 generate_rec (M, i, j, n) -> rec               
 generate_rec_list(M,i,j,L,n) -> rec
-Croix_ind(M, i, j)   -> C
 
 #_______________Bruit_Chemins
 bruit (n, m, r) -> M, H
 sign(x) ->  - 1 if x < 0 else 1
 chemin (i1,  j1,  i2,  j2) -> W
     
-#____tRAveEau________
+#____Amélioration
 chemin_complexe (i1,  j1,  i2,  j2,  n,  m) -> W
 generate_bruit_chemin(n,  m,  r) -> M  
 generate_chemins(n, m) -> M 
@@ -38,6 +39,10 @@ generate_chemins_complexes(n, m) -> M
 #_________________METHODE_GRIGNOTAGE_CARRE
 bordure(nd, nf, md, mf) -> B
 grignotage_carré(M, n, m) -> M
+
+#______________Methode_Mutation
+modifie(M): -> ()
+mutation(N,n,m) -> M
 
 #______________Methode_Maze
 init_maze(n, m) -> M, Hist
@@ -49,7 +54,7 @@ link(M, i, j) -> L
 generate_maze(n, m) -> M
 homog(M, i, j, val) -> rec
 
-#________________Methode_Opti
+#________________Methode_Opti_en_théorie
 generate_test(n,m)-> M
 List_modifiable(M)-> L
 List_bout(M) -> L
@@ -74,8 +79,8 @@ List_3x3_able()
 List_3x3_puzzle() 
 nb_in(M) -> nb
 List_in(L) -> L_in
-Sort_nb_in(L,L_in) -> np.array(L_sort)
-Sort_nb_modif(L,mini,maxi) -> np.array(L_sort)
+Sort_nb_in(L,L_in) -> L_sort
+Sort_nb_modif(L,mini,maxi) -> L_sort
 Tri(L) -> Sort(L,List_in(L))
 Ligne(M,i) -> M[i]
 Colonne(M,j) -> C
@@ -114,9 +119,43 @@ List_puzzle(n,m)
 Brut_force(Na) -> solution
 Test(Na,L) -> solution if found
 
-"""-----------------------------------------"""
+#________Tentative_par_essaie_modifie_avec_heuristique
 Solve_par_essaie_modifie(N,tentative = 100) 
 NA_ind(M,i,j) -> nb
 List_random(n) -> L
 List_not_random(n)  pas complet
 Score(M,Na,n,m) -> s
+
+#_________Backtracking
+solve_SL(Na) -> Une solution M
+rec_brut_SL(M, Na_M, Na, i, j, Val)
+
+solve_SL_all(Na): -> L'ensemble des solutions L
+rec_brut_SL_all(M, Na_M, Na, i, j, Val):
+
+modifie_Na_M(M,Na_M,i,j) -> Na_M,restore  
+restore_Na_M(Na_M,restore) -> Na_M
+    
+états_possible(M,Na_M,Na,i,j) -> Liste des états possibles
+condition_non_diag(M,i,j):
+condition_bas(M,Na_M,Na,i,j):
+condition_droite(M,Na_M,Na,i,j):
+condition_mettre_out(M,Na_M,Na,i,j):
+condition_mettre_in(M,Na_M,Na,i,j):
+solution_trouvé(Na, Na_M, n, m): -> bool
+
+#________Solver_Z3
+
+z3_solver(Na)
+
+
+"""
+~~~~~~~~~~~~~~~~~~~
+VI - Test
+~~~~~~~~~~~~~~~~~~~
+"""
+comparaison_Backtrack_Z3(debut,fin,pas = 5,p = 0,test_par_taille = 1)
+
+score_init(Na):
+liens_init_temps(n,N,p):
+
