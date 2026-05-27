@@ -44,6 +44,9 @@ Table des matières :
         a) Comparaison Z3 avec Backtracking
         b) influence de la répartion des cases non indicé dans le temps pour résoudre
     
+    VII - Générer Puzzle
+    
+    
     
 Auteur: SAUCET Nohlan
 PROJET TIPE 2025 - 2026

@@ -10,54 +10,51 @@
 -> sys
 
 ~~~~~~~~~~~~~~~~~~~
-I - Generation_puzzle
+0 - Fonction utile
 ~~~~~~~~~~~~~~~~~~~
-
-#__________________Grignotage_récursif
-modifiable(M,i,j) -> bool
 Croix(M,i,j) -> C
 Croix_ind(M, i, j)   -> C
 Contour(M,i,j) -> C
 Contour_ind(M,i,j) -> C
+
+~~~~~~~~~~~~~~~~~~~
+I - Generation_puzzle
+~~~~~~~~~~~~~~~~~~~
+
+#_________________Critère de modifiabilité d'une case
+modifiable(M,i,j) -> bool
+
+#_________________METHODE_GRIGNOTAGE_CARRE
+bordure(nd, nf, md, mf) -> B
+grignotage_carré(M, n, m) -> M
+
+#_______________Generation_par_Chemins
+sign(x) ->  - 1 if x < 0 else 1
+chemin (i1,  j1,  i2,  j2) -> W
+generate_chemins(n, m) -> M 
+
+#____Amélioration
+chemin_complexe (i1,  j1,  i2,  j2,  n,  m) -> W
+generate_bruit_chemin(n,  m,  r) -> M  
+generate_chemins_complexes(n, m) -> M
+
+#__________________Grignotage_récursif
 grignotage_rec(n, m) -> M  
 grignotage_rec_centre(n, m) -> M  
 inverse(M) -> M
 generate_rec (M, i, j, n) -> rec               
 generate_rec_list(M,i,j,L,n) -> rec
 
-#_______________Bruit_Chemins
-bruit (n, m, r) -> M, H
-sign(x) ->  - 1 if x < 0 else 1
-chemin (i1,  j1,  i2,  j2) -> W
-    
-#____Amélioration
-chemin_complexe (i1,  j1,  i2,  j2,  n,  m) -> W
-generate_bruit_chemin(n,  m,  r) -> M  
-generate_chemins(n, m) -> M 
-generate_chemins_complexes(n, m) -> M
-
-#_________________METHODE_GRIGNOTAGE_CARRE
-bordure(nd, nf, md, mf) -> B
-grignotage_carré(M, n, m) -> M
-
-#______________Methode_Mutation
-modifie(M): -> ()
-mutation(N,n,m) -> M
-
 #______________Methode_Maze
-init_maze(n, m) -> M, Hist
-init_maze2(n, m, proba=0.1) -> M    
+init_maze(n, m) -> M, Hist 
 Histo(M) -> Hist
-supr_col(M, ind) -> M
-supr_l(M, ind) -> M
 link(M, i, j) -> L
 generate_maze(n, m) -> M
 homog(M, i, j, val) -> rec
 
-#________________Methode_Opti_en_théorie
-generate_test(n,m)-> M
-List_modifiable(M)-> L
-List_bout(M) -> L
+#______________Methode_Mutation
+modifie(M): -> ()
+mutation(N,n,m) -> M
 
 ~~~~~~~~~~~~~~~~~~~
 II - Etudes Dénombrement
@@ -86,6 +83,8 @@ Ligne(M,i) -> M[i]
 Colonne(M,j) -> C
 Moyenne(L,M) -> moy
 Point(M) -> pts
+List_modifiable(M)-> L
+List_bout(M) -> L
 
 ~~~~~~~~~~~~~~~~~~~
 III - Verifier puzzle
@@ -117,16 +116,13 @@ V - Solve puzzle
 
 List_puzzle(n,m) 
 Brut_force(Na) -> solution
-Test(Na,L) -> solution if found
 
 #________Tentative_par_essaie_modifie_avec_heuristique
 Solve_par_essaie_modifie(N,tentative = 100) 
-NA_ind(M,i,j) -> nb
 List_random(n) -> L
-List_not_random(n)  pas complet
 Score(M,Na,n,m) -> s
 
-#_________Backtracking
+#_________Backtracking_Original
 solve_SL(Na) -> Une solution M
 rec_brut_SL(M, Na_M, Na, i, j, Val)
 
@@ -159,3 +155,8 @@ comparaison_Backtrack_Z3(debut,fin,pas = 5,p = 0,test_par_taille = 1)
 score_init(Na):
 liens_init_temps(n,N,p):
 
+~~~~~~~~~~~~~~~~~~~
+VII - Générer Puzzle
+~~~~~~~~~~~~~~~~~~~
+
+generer(n,m,p= 0)
