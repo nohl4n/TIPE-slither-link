@@ -9,7 +9,7 @@ class SlitherLink:
         
         self.rows = rows
         self.cols = cols
-        self.cell_size = 60
+        self.cell_size = 45
         self.margin = 50
         self.width = 2 * self.margin + self.cols * self.cell_size + 250
         self.height = 2 * self.margin + self.rows * self.cell_size

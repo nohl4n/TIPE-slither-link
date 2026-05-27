@@ -1,0 +1,23 @@
+Bachelor Thesis innsbruck:
+
+https://david-westreicher.github.io/static/papers/ba-thesis.pdf
+
+ISSN article : Finding All Solutions and Instances of Numberlink and
+Slitherlink by ZDDs
+
+https://www.mdpi.com/1999-4893/5/2/176
+
+
+Référence de toute les techniques usuelles de solving pour les humains
+https://jonathanolson.net/slitherlink/#introduction-to-solving
+
+
+https://www.cs.ru.nl/bachelors-theses/2025/Ruurd_van_den_Heuvel___1012434___Solving_Loopy_using_an_SMT-solver.pdf
+
+file:///home/nohl4n/T%C3%A9l%C3%A9chargements/IPSJ-JNL5408011.pdf
+
+
+https://liamappelbe.medium.com/how-to-generate-slither-link-puzzles-6c65510b2ba1
+Liam appelbe
+
+https://uca.hal.science/hal-04402827v1/document
