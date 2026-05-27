@@ -63,7 +63,7 @@ import z3
 
 #_____________AUGMENTE_LA_RECURSION_DEPTH
 
-sys.setrecursionlimit(1000000)
+sys.setrecursionlimit(100000)
 
 """
 ~~~~~~~~~~~~~~~~~~~
@@ -517,37 +517,6 @@ def generate_rec (M, i, j, n):
             if modifiable(M, C[k][0], C[k][1]):
                 generate_rec(M, C[k][0], C[k][1], n - 1)
 
-    
-#______________Methode_Mutation
-
-def modifie(M):
-    """
-    Modifie une case modifiable
-    algorithme pas du tout optimal
-    """
-    n, m = len(M), len(M[0])
-    
-    L = []
-    for i in range(n):
-        for j in range(m):
-            if modifiable(M, i, j):
-                L.append([i, j])
-    
-    case = r.randint(0, len(L)-1)
-    
-    im, jm = L[case][0], L[case][1]
-    
-    M[im][jm] = not M[im][jm]
-    
-def mutation(N,n,m):
-
-    M = grignotage_carré(generate_chemins_complexes(n, m), n, m)
-    
-    for _ in range(N):
-        modifie(M)
-    
-    return M
-
 #______________Methode_Maze
 
 def init_maze(n, m):
@@ -686,69 +655,37 @@ def homog(M, i, j, val):
     for i_p, j_p in Croix:
         if M[i_p][j_p] != 0 and M[i_p][j_p] != val:
             homog(M, i_p, j_p, val)
-            
-#________________Methode_Opti_en_théorie
 
-def generate_test(n,m):
-    i_mid = n//2
-    j_mid = m//2
     
-    M =[[False]*m for _ in range(n)]
+#______________Methode_Mutation
+
+def modifie(M):
+    """
+    Modifie une case modifiable
+    algorithme pas du tout optimal
+    """
+    n, m = len(M), len(M[0])
     
+    L = []
     for i in range(n):
         for j in range(m):
-            if abs(i - i_mid) < n / 4*(2**0.5) and abs(j - j_mid) < m / 4*(2**0.5):
-                M[i][j] = True
-                
-    L = List_modifiable(M)
+            if modifiable(M, i, j):
+                L.append([i, j])
     
-    for _ in range(n*m):
-        l = len(L)
-        
-        if l != 0:
-            ind = r.randint(0, l - 1)
-            #L[-1],L[ind] = L[ind], L[-1]
-            i, j = L[ind][0], L[ind][1]
-            
-            if modifiable(M,i,j):
-                M[i][j] = not(M[i][j])
-                
-        L = List_modifiable(M)
+    case = r.randint(0, len(L)-1)
     
+    im, jm = L[case][0], L[case][1]
+    
+    M[im][jm] = not M[im][jm]
+    
+def mutation(N,n,m):
+
+    M = grignotage_carré(generate_chemins_complexes(n, m), n, m)
+    
+    for _ in range(N):
+        modifie(M)
     
     return M
-    
-def List_modifiable(M):
-    """renvoie une liste des indices des cases modifiable"""
-    n,m = M.shape
-    L=[]
-    
-    for i in range(n):
-        for j in range(m):
-            if modifiable(M,i,j):
-                L.append([i,j])
-    
-    return L
-    
-def List_bout(M):
-    """renvoie une liste des indices des cases qui sont des bout"""
-    n,m = M.shape
-    L=[]
-    
-    for i in range(n):
-        for j in range(m):
-                
-            acc = 0
-            C = Croix(M,i,j)
-            
-            for b in C:
-                if b:
-                    acc += 1
-                    
-            if  (M[i][j] and acc ==3) or ( ( not M[i][j] ) and acc == 1 ) :
-                L.append([i,j])
-    
-    return L
 
 """
 ~~~~~~~~~~~~~~~~~~~
@@ -801,7 +738,7 @@ def List_nxm(n,m):
     
         for i in range(n):
             for j in range(m):
-                M[i,j] = s[somme]
+                M[i][j] = s[somme]
                 somme += 1
                 
         L.append(M)
@@ -1035,6 +972,38 @@ def Point(M):
     pts = pts/(n+m)
     
     return pts
+    
+def List_modifiable(M):
+    """renvoie une liste des indices des cases modifiable"""
+    n,m = M.shape
+    L=[]
+    
+    for i in range(n):
+        for j in range(m):
+            if modifiable(M,i,j):
+                L.append([i,j])
+    
+    return L
+    
+def List_bout(M):
+    """renvoie une liste des indices des cases qui sont des bout"""
+    n,m = M.shape
+    L=[]
+    
+    for i in range(n):
+        for j in range(m):
+                
+            acc = 0
+            C = Croix(M,i,j)
+            
+            for b in C:
+                if b:
+                    acc += 1
+                    
+            if  (M[i][j] and acc ==3) or ( ( not M[i][j] ) and acc == 1 ) :
+                L.append([i,j])
+    
+    return L
     
 
     
@@ -1467,13 +1436,13 @@ def solve_SL(Na):
         # on tente d'abord en posant la première case à 1 puis 2
         if Na[0][0] == -1 or Na[0][0] >= 2:
             Na_M,restore = modifie_Na_M(M,Na_M,0,0)
-            rec_brut_SL(M, Na_M, Na, 0, 0, True ,n, m)
+            rec_brut_SL(M, Na_M, Na, 0, 0, True,n,m)
             Na_M = restore_Na_M(Na_M,restore)
 
         if Na[0][0] == -1 or Na[0][0] <= 2:
-            rec_brut_SL(M, Na_M, Na, 0, 0, False, n, m)
+            rec_brut_SL(M, Na_M, Na, 0, 0, False,n,m)
             
-        #print("Aucune solution trouvée.")
+        print("Aucune solution trouvée.")
     except SolutionFound:
         #print(" Solution trouvée !")
         #for row in range(n):
@@ -1481,58 +1450,56 @@ def solve_SL(Na):
         #print('---')
         return M,Na
         
-def rec_brut_SL(M, Na_M, Na, i, j, Val, n, m):
+def rec_brut_SL(M, Na_M, Na, i, j, Val,n,m):
     # sauvegarde pour le backtracking
     prev = M[i][j]
     M[i][j] = Val
-    
-    n = len(M)
-    m = len(M[0])
 
-    # affichage pour debug
+    # affichage pour debug (on affiche une copie pour éviter effet de référence)
     
     #for row in range(n):
         #print(M[row],Na_M[row],Na[row],i,j)
     #print("--")
-    
-    #si derniere case
-    if i==n-1 and j == m-1:
-        if solution_trouvé(Na, Na_M, n, m) and Verif(M) :
-            raise SolutionFound # test de solution
+
+    # test de solution
+    if solution_trouvé(Na, Na_M, n, m):
+        raise SolutionFound
+
+    # avancer dans l'ordre des cases : (i,j) -> next_i, next_j
+    # calcule next indices
+    next_i, next_j = i, j
+    if j > 0 and i < n-1:
+        next_i, next_j = i+1, j-1
+
+    elif i==n-1 and j == m-1:
         # dernière case ; on a déjà testé l'égalité, donc pas de suite
         # restore et return
         M[i][j] = prev
         return
+        
+    else:
+        # première case de la prochaine diagonale (s+1), en haut à droite
+        s = i + j
+        next_i = max(0, s + 1 - (m - 1))
+        next_j = s + 1 - next_i
+        
 
-    # sinon calcule next indices
-    elif j > 0 and i < n-1: # continuer dans l'antidiagonale
-        next_i, next_j = i+1, j-1
-
-    # diagonale suivante
-    else :
-        s = i + j + 1
-        if s < m: # commence sur la première ligne
-            next_i, next_j = 0, s
-        else : # commence sur la dernière colonne
-            next_i, next_j = s - m + 1, m - 1
-    
     # obtenir états possibles pour la prochaine case
-    E = états_possible(M, Na_M, Na, next_i, next_j, n, m)
+    E = états_possible(M, Na_M, Na, next_i, next_j,n,m)
 
     # explore selon ce qui est possible (tester présence plutôt qu'égalité stricte)
     if True in E:
         #modifie Na
         Na_M,restore = modifie_Na_M(M,Na_M,next_i,next_j)
         #applique l'algo sur la prochaine case
-        rec_brut_SL(M, Na_M, Na, next_i, next_j, True, n, m)
+        rec_brut_SL(M, Na_M, Na, next_i, next_j, True,n,m)
         # restore l'ancienne valeur de Na_M
         Na_M = restore_Na_M(Na_M,restore)
     if False in E:
-        rec_brut_SL(M, Na_M, Na, next_i, next_j, False, n, m)
+        rec_brut_SL(M, Na_M, Na, next_i, next_j, False,n,m)
 
     # backtrack : restaurer l'ancienne valeur avant de retourner
     M[i][j] = prev
-
 
 #all trouve l'ensemble des solutions
         
@@ -1545,23 +1512,32 @@ def solve_SL_all(Na):
     
     #si Na se trouve dans le cercle critique on tourne le puzzle
     #tourné = False
+    #print(score_init(Na))
     #if score_init(Na) == 0 :
-        #Na = (np.rot90(Na,k=2).tolist())
+        #Na = np.rot90(Na,k=2).tolist()
         #tourné = True
+    #print(score_init(Na))
         
     def rec_brut_SL_all(M, Na_M, Na, i, j, Val,n,m):
         # sauvegarde pour le backtracking
         prev = M[i][j]
         M[i][j] = Val
     
-        # affichage pour debug
+        # affichage pour debug (on affiche une copie pour éviter effet de référence)
         #for row in range(n):
             #print(M[row],Na_M[row],Na[row],i,j)
         #print("--")
-        
-        if i== n-1 and j == m-1: # dernière case
+    
+        # avancer dans l'ordre des cases : (i,j) -> next_i, next_j
+        # calcule next indices
+        next_i, next_j = i, j
+        if j > 0 and i < n-1:
+            next_i, next_j = i+1, j-1
+    
+        elif i==n-1 and j == m-1:
+            # dernière case ; on a déjà testé l'égalité, donc pas de suite
             # test de solution
-            if solution_trouvé(Na, Na_M, n, m): #and Verif(M):
+            if solution_trouvé(Na, Na_M, n, m) : #and Verif(M):
                 #if tourné :
                     #M = np.rot90(M,k=2).tolist()
                 solutions.append([row[:] for row in M])
@@ -1570,20 +1546,16 @@ def solve_SL_all(Na):
             # restore et return
             M[i][j] = prev
             return
-
-        # sinon calcule next indices
-        elif j > 0 and i < n - 1: # continuer dans l'antidiagonale
-            next_i, next_j = i + 1, j - 1
-
-        else : # antidiagonale suivante
-            s = i + j + 1
-            if s < m: # commence sur la première ligne
-                next_i, next_j = 0, s
-            else : # commence sur la dernière colonne
-                next_i, next_j = s - m + 1, m - 1
+            
+        else:
+            # première case de la prochaine diagonale (s+1), en haut à droite
+            s = i + j
+            next_i = max(0, s + 1 - (m - 1))
+            next_j = s + 1 - next_i
+            
     
         # obtenir états possibles pour la prochaine case
-        E = états_possible(M, Na_M, Na, next_i, next_j, n,m)
+        E = états_possible(M, Na_M, Na, next_i, next_j,n,m)
     
         # explore selon ce qui est possible (tester présence plutôt qu'égalité stricte)
         if True in E:
@@ -1610,21 +1582,17 @@ def solve_SL_all(Na):
     
     # Affichage des résultats
     if solutions:
-        """ affichage si nécessaire
-        print(f"{len(solutions)} solution(s) trouvée(s) :")
-        for idx, (M_sol) in enumerate(solutions):
-            print(f"Solution {idx+1}:")
-            for row in range(n):
-                print(M_sol[row])
-            print('---')
-        print('return')
-        """
+        #print(f"{len(solutions)} solution(s) trouvée(s) :")
+        #for idx, (M_sol) in enumerate(solutions):
+            #print(f"Solution {idx+1}:")
+            #for row in range(n):
+                #print(M_sol[row])
+            #print('---')
+        #print('return')
         return solutions
     else:
         print("Aucune solution trouvée.")
         return []
-
-
 
 def modifie_Na_M(M,Na_M,i,j):
     restore = []
@@ -1645,16 +1613,15 @@ def modifie_Na_M(M,Na_M,i,j):
     restore.append([i,j,Na_M[i][j]])
     Na_M[i][j] = val + (4 -c)
     return Na_M,restore
-
-
+    
 def restore_Na_M(Na_M,restore):
     for i,j,val in restore:
         Na_M[i][j] = val
-
+        
     return Na_M
 
     
-def états_possible(M,Na_M,Na,i,j, n, m):
+def états_possible(M,Na_M,Na,i,j,n,m):
     E = [True, False]
     #regarde si il y a une condition bas
     c_bas = condition_bas(M,Na_M,Na,i,j)
@@ -1674,10 +1641,10 @@ def états_possible(M,Na_M,Na,i,j, n, m):
             E.remove(choix)
 
     #vérifie qu'il n'y est pas de contradiction et agit en conséquence
-    if not condition_mettre_out(M,Na_M,Na,i,j, n, m) and False in E :
+    if not condition_mettre_out(M,Na_M,Na,i,j,n,m) and False in E :
         E.remove(False)
 
-    if not condition_mettre_in(M,Na_M,Na,i,j, n, m) and True in E:
+    if not condition_mettre_in(M,Na_M,Na,i,j,n,m) and True in E:
         E.remove(True)
     
     return E
@@ -1719,7 +1686,7 @@ def condition_droite(M,Na_M,Na,i,j):
         else : # les deux états sont possibles
             return "pas de condition droite"
 
-def condition_mettre_out(M,Na_M,Na,i,j, n, m):
+def condition_mettre_out(M,Na_M,Na,i,j,n,m):
     #il faut que la fonction renvoie true sinon il y a une contradiction
     # vérifier qu'il n'y a pas de contradiction si on laisse out
     if Na[i][j] == -1 :
@@ -1737,8 +1704,8 @@ def condition_mettre_out(M,Na_M,Na,i,j, n, m):
         else : # on ne peut modifier que 2 fois
             return Na[i][j] - val_si_out >= 0 and Na[i][j] - val_si_out <= 2
 
-def condition_mettre_in(M,Na_M,Na,i,j, n, m):
-    # Il faut que la fonction renvoie True
+def condition_mettre_in(M,Na_M,Na,i,j,n,m):
+    # Il faut que la focntion renvoie true sinon il y a contradiction
     # vérifier qu'il n'y a pas de contradiction si on met in
     if Na[i][j] == -1:
         return True
@@ -1769,140 +1736,73 @@ def solution_trouvé(Na, Na_M, n, m):
         i += 1
     return res
 
-
 #_______Solver_Z3
 def z3_solver(Na):
+    """
+    Na : liste de listes d'entiers (n x m), valeurs dans -1,0,1,2,3,4.
+    Retourne la liste de toutes les grilles M (booléennes) qui vérifient :
+      - Pour chaque (i,j), # de voisins (4 directions, hors grille=False) valant not M[i][j] == Na[i][j] (si Na[i][j] != -1)
+      - Aucun des deux motifs 2x2 interdits.
+    """
     if not Na or not Na[0]:
         return []
-    n, m = len(Na), len(Na[0])
+    n = len(Na)
+    m = len(Na[0])
+
+    # Variables booléennes pour chaque cellule
     M = [[z3.Bool(f"M_{i}_{j}") for j in range(m)] for i in range(n)]
     solver = z3.Solver()
-    dirs = [(-1,0),(1,0),(0,-1),(0,1)]
 
+    # Directions orthogonales
+    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    # Contraintes de voisinage
     for i in range(n):
         for j in range(m):
-            if Na[i][j] == -1:
-                continue
-            voisins_in  = []
-            nb_hors = 0
+            voisins = []
             for di, dj in dirs:
-                ni, nj = i+di, j+dj
+                ni, nj = i + di, j + dj
                 if 0 <= ni < n and 0 <= nj < m:
-                    voisins_in.append(M[ni][nj])
+                    voisins.append(M[ni][nj])
                 else:
-                    nb_hors += 1  # hors-grille = False, donc ≠ M[i][j] ssi M[i][j]=True
+                    voisins.append(z3.BoolVal(False))  # hors grille = False
 
-            # Contribution symbolique : voisins intérieurs différents de M[i][j]
-            sym = z3.Sum([z3.If(z3.Xor(v, M[i][j]), 1, 0) for v in voisins_in])
-            # Contribution des bords : nb_hors si M[i][j]=True, 0 sinon
-            bord = z3.If(M[i][j], nb_hors, 0)
-            solver.add(sym + bord == Na[i][j])
+            # Compte combien de voisins valent (not M[i][j])
+            somme = z3.Sum([z3.If(v != M[i][j], 1, 0) for v in voisins])
+            if Na[i][j] != -1:
+                solver.add(somme == Na[i][j])
 
-    for i in range(n-1):
-        for j in range(m-1):
-            a, b, c, d = M[i][j], M[i][j+1], M[i+1][j], M[i+1][j+1]
-            solver.add(z3.Or(z3.Not(a),  b,  c, z3.Not(d)))  # interdit TF/FT
-            solver.add(z3.Or(a, z3.Not(b), z3.Not(c),  d))   # interdit FT/TF
+    # Contraintes anti-motifs 2x2
+    for i in range(n - 1):
+        for j in range(m - 1):
+            # Motif 1 : [[True, False], [False, True]]
+            solver.add(z3.Not(z3.And(M[i][j] == True,
+                               M[i][j+1] == False,
+                               M[i+1][j] == False,
+                               M[i+1][j+1] == True)))
+            # Motif 2 : [[False, True], [True, False]]
+            solver.add(z3.Not(z3.And(M[i][j] == False,
+                               M[i][j+1] == True,
+                               M[i+1][j] == True,
+                               M[i+1][j+1] == False)))
 
+    # Collecte de toutes les solutions
     solutions = []
     while solver.check() == z3.sat:
         model = solver.model()
         sol = [[z3.is_true(model[M[i][j]]) for j in range(m)] for i in range(n)]
         solutions.append(sol)
-        solver.add(z3.Or([
-            z3.Not(M[i][j]) if z3.is_true(model[M[i][j]]) else M[i][j]
-            for i in range(n) for j in range(m)
-        ]))
-    return solutions
 
-def z3_solver_optimized(Na):
-    """
-    Version optimisée du solver.
-
-    Contraintes :
-    - voisinage orthogonal
-    - hors grille = False
-    - interdiction des motifs damier 2x2
-    - énumération de toutes les solutions
-    """
-
-    if not Na or not Na[0]:
-        return []
-
-    n,m = len(Na), len(Na[0])
-
-    # Solver spécialisé problèmes finis / booléens
-    solver = z3.SolverFor("QF_FD")
-
-    # Variables
-    M = [[z3.Bool(f"M_{i}_{j}") for j in range(m)] for i in range(n)]
-
-    FALSE = z3.BoolVal(False)
-
-    # Pré-calcul des voisins
-    neighbors = [[None for _ in range(m)] for _ in range(n)]
-
-    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-    for i in range(n):
-        for j in range(m):
-
-            current_neighbors = []
-
-            for di, dj in dirs:
-                ni, nj = i + di, j + dj
-
-                if 0 <= ni < n and 0 <= nj < m:
-                    current_neighbors.append(M[ni][nj])
+        # Blocage pour éviter de retrouver la même solution
+        bloc = []
+        for i in range(n):
+            for j in range(m):
+                val = z3.is_true(model[M[i][j]])
+                if val:
+                    bloc.append(z3.Not(M[i][j]))
                 else:
-                    current_neighbors.append(FALSE)
-
-            neighbors[i][j] = current_neighbors
-
-    # Contraintes de voisinage (version pseudo-booléenne)
-    for i in range(n):
-        for j in range(m):
-
-            if Na[i][j] == -1:
-                continue
-
-            # XOR = voisin différent de la case centrale
-            xor_vars = [ z3.Xor(v, M[i][j]) for v in neighbors[i][j] ]
-            # Cardinalité optimisée
-            solver.add( z3.PbEq( [(x, 1) for x in xor_vars], Na[i][j]) )
-
-    # Anti motifs 2x2 (damiers)
-    for i in range(n - 1):
-        for j in range(m - 1):
-
-            a = M[i][j]
-            b = M[i][j + 1]
-            c = M[i + 1][j]
-            d = M[i + 1][j + 1]
-
-            solver.add(z3.Or( a == b, a == c, a != d ))
-
-    # Énumération des solutions
-    solutions = []
-    while solver.check() == z3.sat:
-        model = solver.model()
-        sol = [
-            [
-                z3.is_true(model.evaluate(M[i][j]))
-                for j in range(m)
-            ]
-            for i in range(n)
-        ]
-        solutions.append(sol)
-
-        # Blocage optimisé du modèle
-        solver.add(
-            z3.Or([
-                M[i][j] != model.evaluate(M[i][j])
-                for i in range(n)
-                for j in range(m)
-            ])
-        )
+                    bloc.append(M[i][j])
+        solver.add(z3.Or(bloc))
 
     return solutions
 
@@ -1920,19 +1820,16 @@ def comparaison_Backtrack_Z3(debut,fin,pas = 5,p = 0,test_par_taille = 1):
         tot_1=0
         tot_2=0
         for _ in range (test_par_taille) :
-            print('génération...',i)
             M = generer(i,i,p)
             
-            print('solver_SL_all')
             start = time.time()
             S1 = solve_SL_all(M)
             end = time.time()
             tot_1 += end-start
             
             """
-            print('z3 solver', i)
             start = time.time()
-            S2 = solve_SL(M)
+            S2 = z3_solver(M)
             end = time.time()
             tot_2 += end-start
             """
@@ -1963,12 +1860,12 @@ def score_init(Na):
                 tot+=1
 
     #return ((moy_i/tot - m_i_2/(tot))**2 + (moy_j/tot - m_j_2/(tot))**2 )**0.5
-    return ((moy_i/tot)**2 + (moy_j/tot)**2)**0.5
+    #return ((moy_i/tot)**2 + (moy_j/tot)**2)**0.5
     
-    #if tot != 0 and ((moy_i/tot)**2 + (moy_j/tot)**2)**0.5 < (((n/2)**2 + (m/2)**2)**0.5)*0.8 :
-        #return 0
-    #else :
-        #return 1
+    if tot != 0 and ((moy_i/tot)**2 + (moy_j/tot)**2)**0.5 < (((n/2)**2 + (m/2)**2)**0.5)*0.8 :
+        return 0
+    else :
+        return 1
 
 def liens_init_temps(n,N,p):
     S = []
@@ -2010,4 +1907,3 @@ def generer(n,m,p= 0):
             H.append([i,j])
         
     return Na
-        
