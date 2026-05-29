@@ -3,57 +3,53 @@
 | Slitherlink GAME |
 ====================
 
-Un programme complet pour générer,  résoudre et visualiser des puzzles Slitherlink.
+Un programme complet pour générer, résoudre et visualiser des puzzles Slitherlink.
 Le Slitherlink est un puzzle logique où le but est de connecter des points pour former
-une boucle unique fermée,  avec des indices numériques indiquant le nombre d'arêtes
+une boucle unique fermée, avec des indices numériques indiquant le nombre d'arêtes
 à dessiner autour de chaque cellule.
 
 Table des matières :
     
     0 - Fonction utile
 
-    I - Generation_puzzle
+    I - Génération du puzzle
         0) Critère de modifiabilité
-        a) Grignotage recursif
-        b) Grignotage carré
-        c)  1.bruit chemin
-            2.Amélioration
-        d) Generation par mutation
-        e) Generation type Labyrinthe
-        f) méthode théoriquement optimal
+        1) Grignotage carré
+        2) Grignotage carré + crevasse
+            1. Chemin simple
+            2. Chemin complexe
+        3) Grignotage récursif
+        4) Génération type Labyrinthe
+        5) Génération par mutation
         
-    II - Etude de dénombrement
+    II - Étude de dénombrement
         a) Filtres
-        b) Test pour les filtres
+        b) Tests pour les filtres
         
-    III - Verifier_puzzle
+    III - Vérifier puzzle
         a) Règles
-        b) Règle equivalente en 2 couleurs
+        b) Règle équivalente en 2 couleurs
     
-    IV - Fonction pour visualiser des puzzles
+    IV - Fonctions pour visualiser des puzzles
         
-    V - Solve_puzzle
-        a) Brut_force
-        b) méthode essaie modifie avec heuristique
-        c) Backtracking efficasse
-        d) solver z3
+    V - Solveur
+        a) Brute force
+        b) Méthode essai-modifié avec heuristique
+        c) Backtracking original
+        d) Solveur z3
     
-    VI - Show_puzzle
-    
-    VI - Test
+    VI - Tests
         a) Comparaison Z3 avec Backtracking
-        b) influence de la répartion des cases non indicé dans le temps pour résoudre
+        b) Influence de la répartition des cases non indicées sur le temps de résolution
     
     VII - Générer Puzzle
     
-    
-    
-Auteur: SAUCET Nohlan
+Auteur : SAUCET Nohlan
 PROJET TIPE 2025 - 2026
 """
 
 
-# _____________BIBLIOTHEQUE
+# _____________BIBLIOTHÈQUE
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -64,7 +60,7 @@ import sys
 import z3
 
 
-#_____________AUGMENTE_LA_RECURSION_DEPTH
+# _____________AUGMENTE LA PROFONDEUR DE RÉCURSION
 
 sys.setrecursionlimit(100000)
 
@@ -75,10 +71,7 @@ sys.setrecursionlimit(100000)
 """
 
 def Croix(M,i,j):
-
-    """
-    Retourne la valeur des cellules voisines (en croix).
-    """
+    """Retourne la valeur des cellules voisines (en croix)."""
     
     n,m = len(M) , len(M[0])
     if i==0 and j==0:
@@ -102,10 +95,7 @@ def Croix(M,i,j):
     return C
     
 def Croix_ind(M, i, j):
-
-    """
-    Retourne les indices des cellules voisines (en croix).
-    """
+    """Retourne les indices des cellules voisines (en croix)."""
     
     n, m = len(M), len(M[0])
     if i == 0 and j == 0:
@@ -129,10 +119,7 @@ def Croix_ind(M, i, j):
     return C
     
 def Contour(M,i,j):
-    
-    """
-    Retourne les 8 cases qui entoure la case d'indice (i,j).
-    """
+    """Retourne les 8 cases qui entourent la case d'indice (i,j)."""
     
     n,m = len(M) , len(M[0])
     if i==0 and j==0:
@@ -156,10 +143,7 @@ def Contour(M,i,j):
     return C
     
 def Contour_ind(M,i,j):
-
-    """
-    Retourne l'indices des 8 cases qui entoure la case d'indice (i,j).
-    """
+    """Retourne les indices des 8 cases qui entourent la case d'indice (i,j)."""
     
     n,m = len(M) , len(M[0])
     if i==0 and j==0:
@@ -185,22 +169,22 @@ def Contour_ind(M,i,j):
 
 """
 ~~~~~~~~~~~~~~~~~~~
-I - Generation_puzzle
+I - Génération du puzzle
 ~~~~~~~~~~~~~~~~~~~
 """
 
 #_________________Critère de modifiabilité d'une case
 
 def modifiable(M,i,j):
-    """Verifie si une case peut être à la fois exterieur et interieur"""
+    """Vérifie si une case peut être à la fois extérieure et intérieure."""
     
     Contour_M = Contour(M,i,j)
     Croix_M = Croix(M,i,j)
     
-    # la case est connecté à l'interieur et à l'exterieur
+    # la case est connectée à l'intérieur et à l'extérieur
     bool1 = (False in Croix_M and True in Croix_M)
     
-    # le contour n'as qu'une seule variation de couleur
+    # le contour n'a qu'une seule variation de couleur
     precedent = Contour_M[7]
     var = 0
     
@@ -212,20 +196,10 @@ def modifiable(M,i,j):
     
     return bool1 and bool2
     
-#1_________________METHODE_GRIGNOTAGE_CARRE
+#1_________________Grignotage carré
 
 def bordure(nd, nf, md, mf):
-
-    """
-    Génère les indices des cellules de bordure.
-    
-    Args:
-        nd, nf (int): Début et fin des lignes
-        md, mf (int): Début et fin des colonnes
-        
-    Returns:
-        list: Liste des indices de bordure
-    """
+    """Donne la liste des indices des cellules de bordure."""
     
     B=[]
     for j in range(md, mf):
@@ -239,18 +213,7 @@ def bordure(nd, nf, md, mf):
     return B
 
 def grignotage_carré(M, n, m, proba = 0.8):
-
-    """
-    Génère un puzzle par grignotage carré.
-
-    Args:
-        n (int): Nombre de lignes
-        m (int): Nombre de colonnes
-        M (list of list, optional): Matrice existante
-        
-    Returns:
-        list of list: Matrice du puzzle
-    """
+    """Génère un puzzle par grignotage carré."""
     
     #M =[[True]*m for _ in range(n)]
     
@@ -281,7 +244,7 @@ def grignotage_carré(M, n, m, proba = 0.8):
     return M
     
 
-#_______________Generation_par_Chemins
+#_______________Génération par Chemins
 
 def sign(x):
     """Retourne le signe d'un nombre."""
@@ -289,16 +252,7 @@ def sign(x):
         
 
 def chemin (i1, j1, i2, j2):
-    """
-    Génère un chemin entre deux points.
-    
-    Args:
-        i1,  j1 (int): Point de départ
-        i2,  j2 (int): Point d'arrivée
-        
-    Returns:
-        list: Liste des points du chemin
-    """
+    """Génère un chemin entre deux points."""
     
     W=[]
     i, j = i1, j1
@@ -318,21 +272,19 @@ def chemin (i1, j1, i2, j2):
         W.append([i, j])
     return W
     
-def generate_chemins(n, m):
-    """
-    Génère des fissures sur une solution de taille n*m
-    """
+def generation_par_chemins(n, m):
+    """Génère des fissures sur une solution de taille n*m."""
     
     #initialisation
     M =[[True]*m for _ in range(n)]
     B= bordure(0, n, 0, m)
     
-    # choix de l'ordre des cases parcouruent sur le bord
+    # choix de l'ordre des cases parcourues sur le bord
     r.shuffle(B)
     b= len(B)
     
     for k in range(r.randint(1, b//5)):
-        #choix du point d'arrivé de la fissure
+        #choix du point d'arrivée de la fissure
         i, j = r.randint(1, n - 1),  r.randint(1, m - 1)
         #création d'une fissure d'un point du bord au point choisi
         W = chemin (B[k][0], B[k][1], i, j)
@@ -343,21 +295,10 @@ def generate_chemins(n, m):
 
     return M
     
-#________Amélioration
+#________Génération par chemins complexes
 
 def chemin_complexe (i1, j1, i2, j2, n, m):
-
-    """
-    Génère un chemin plus complexe entre deux points.
-    
-    Args:
-        i1,  j1 (int): Point de départ
-        i2,  j2 (int): Point d'arrivée
-        n,  m (int): Dimensions de la grille
-        
-    Returns:
-        list: Liste des points du chemin
-    """
+    """Génère un chemin plus complexe entre deux points."""
     
     W = []
     i, j = i1, j1
@@ -402,21 +343,19 @@ def chemin_complexe (i1, j1, i2, j2, n, m):
     
     return W
     
-def generate_chemins_complexes(n, m):
-    """
-    Génère des fissures sur une solution de taille n*m
-    """
+def generation_par_chemins_complexes(n, m):
+    """Génère des fissures sur une solution de taille n*m."""
     
     #initialisation
     M =[[True]*m for _ in range(n)]
     B= bordure(0, n, 0, m)
     
-    # choix de l'ordre des cases parcouruent sur le bord
+    # choix de l'ordre des cases parcourues sur le bord
     r.shuffle(B)
     b= len(B)
     
     for k in range(r.randint(1, b//5)):
-        #choix du point d'arrivé de la fissure
+        #choix du point d'arrivée de la fissure
         i, j = r.randint(1, n - 1),  r.randint(1, m - 1)
         #création d'une fissure d'un point du bord au point choisi
         W = chemin_complexe (B[k][0], B[k][1], i, j, n, m)
@@ -427,20 +366,10 @@ def generate_chemins_complexes(n, m):
 
     return M
     
-#__________________Grignotage_récursif
+#__________________Grignotage récursif
 
 def grignotage_rec(n, m, N = -1):
-
-    """
-    Génère un puzzle Slitherlink par grignotage récursif.
-        
-    Args:
-        n (int): Nombre de lignes
-        m (int): Nombre de colonnes
-            
-    Returns:
-    list of list : Matrice booléenne représentant le puzzle
-    """
+    """Génère une solution Slitherlink par grignotage récursif."""
     if N == -1:
         N = n*m
     
@@ -454,58 +383,12 @@ def grignotage_rec(n, m, N = -1):
     
     for k in range(a):
         if modifiable(M, B[k][0], B[k][1]):
-            generate_rec(M, B[k][0], B[k][1], N)
+            grignotage_aux(M, B[k][0], B[k][1], N)
     
     return M
-    
-def grignotage_rec_centre(n, m):
 
-    """
-    Autre méthode de grignotage récursif commençant au centre.
-        
-    Args:
-        n (int): Nombre de lignes
-        m (int): Nombre de colonnes
-        
-    Returns:
-        list of list : Matrice booléenne représentant le puzzle
-    """
-
-    M =[[True]*m for _ in range(n)]
-    generate_rec(M, n//2, m//2, (n*m)//2)
-    
-    return M
-    
-def inverse(M):
-    """
-    Inverse les valeurs booléennes d'une matrice.
-        
-    Args:
-        M : Matrice à inverser
-        
-    Returns:
-        list of list : Matrice inversée
-    """
-    
-    n, m = len(M) ,  len(M[0])
-    for i in range(n):
-        for j in range(m):
-            if M[i][j]:
-                M[i][j] = False
-            else:
-                M[i][j] = True
-
-def generate_rec (M, i, j, n):
-
-    """
-    Fonction récursive pour le grignotage.
-    
-    Args:
-        M (list of list): Matrice du puzzle
-        i (int): Index de ligne
-        j (int): Index de colonne
-        n (int): Nombre d'itérations restantes
-    """
+def grignotage_aux (M, i, j, n):
+    """Fonction auxiliaire pour le grignotage récursif."""
 
     if n>0:
     
@@ -518,22 +401,14 @@ def generate_rec (M, i, j, n):
     
         for k in range(r.randint(1, c - 1)):
             if modifiable(M, C[k][0], C[k][1]):
-                generate_rec(M, C[k][0], C[k][1], n - 1)
+                grignotage_aux(M, C[k][0], C[k][1], n - 1)
 
-#______________Methode_Maze
+#______________Génération labyrinthe
 
-def init_maze(n, m):
-
-    """
-    Initialise un labyrinthe pour la génération.
+def init_labyrinthe(n, m):
+    assert n%2 == 1 and m%2 == 1, 'n et m doivent être impairs'
+    """Initialise un labyrinthe pour la génération."""
     
-    Args:
-        n (int): Nombre de lignes
-        m (int): Nombre de colonnes
-        
-    Returns:
-        tuple: (Matrice du labyrinthe, Historique des positions)
-    """
     M = [[0]*m for _ in range(n)]
     Hist = []
     compteur = 1
@@ -547,16 +422,7 @@ def init_maze(n, m):
     return [M, Hist]
     
 def Histo(M):
-
-    """
-    Crée un historique des positions non nulles.
-    
-    Args:
-        M (list of list): Matrice à analyser
-        
-    Returns:
-        list: Historique des positions
-    """
+    """Crée un historique des positions non nulles."""
     
     n, m = len(M), len(M[0])
     Hist = []
@@ -572,16 +438,7 @@ def Histo(M):
     
     
 def link(M, i, j):
-    """
-    Trouve les liens possibles depuis une cellule.
-    
-    Args:
-        M (list of list): Matrice du labyrinthe
-        i, j (int): Position de la cellule
-        
-    Returns:
-        list: Liste des liens possibles
-    """
+    """Trouve les liens possibles depuis une cellule."""
     
     n, m= len(M), len(M[0])
     L = []
@@ -601,20 +458,11 @@ def link(M, i, j):
         
     return L
     
-def generate_maze(n, m):
-    assert n%2 == 1 and m%2 == 1, 'n et m doivent être impaire'
-    """
-    Génère un puzzle avec la méthode du labyrinthe.
+def generation_par_labyrinthe(n, m):
+    assert n%2 == 1 and m%2 == 1, 'n et m doivent être impairs'
+    """Génère un puzzle avec la méthode du labyrinthe."""
     
-    Args:
-        n (int): Nombre de lignes
-        m (int): Nombre de colonnes
-        
-    Returns:
-        list of list: Matrice du puzzle
-    """
-    
-    M, Hist= init_maze(n, m)[0] , init_maze(n, m)[1]
+    M, Hist= init_labyrinthe(n, m)[0] , init_labyrinthe(n, m)[1]
 
     h = len(Hist)
     r.shuffle(Hist)
@@ -643,15 +491,7 @@ def generate_maze(n, m):
     return M
     
 def homog(M, i, j, val):
-
-    """
-    Uniformise les valeurs dans une zone connectée.
-    
-    Args:
-        M (list of list): Matrice à modifier
-        i, j (int): Position de départ
-        val: Valeur à propager
-    """
+    """Uniformise les valeurs dans une zone connectée."""
     
     M[i][j] = val
     Croix = Croix_ind(M, i, j)
@@ -660,13 +500,10 @@ def homog(M, i, j, val):
             homog(M, i_p, j_p, val)
 
     
-#______________Methode_Mutation
+#______________Méthode Mutation
 
 def modifie(M):
-    """
-    Modifie une case modifiable
-    algorithme pas du tout optimal
-    """
+    """Modifie une case modifiable (algorithme pas du tout optimal)."""
     n, m = len(M), len(M[0])
     
     L = []
@@ -682,8 +519,9 @@ def modifie(M):
     M[im][jm] = not M[im][jm]
     
 def mutation(N,n,m):
+    """On part d'une solution générée par crevasse + grignotage carré puis on fait N mutations."""
 
-    M = grignotage_carré(generate_chemins_complexes(n, m), n, m)
+    M = grignotage_carré(generation_par_chemins_complexes(n, m), n, m)
     
     for _ in range(N):
         modifie(M)
@@ -692,33 +530,13 @@ def mutation(N,n,m):
 
 """
 ~~~~~~~~~~~~~~~~~~~
-II - Etudes Dénombrement
+II - Étude de Dénombrement
 ~~~~~~~~~~~~~~~~~~~
 """
 
-def List_3x3():
-    """Génère toutes les matrices 3x3 possibles."""
-
-    L = []
-    for i in range (512):
-    
-        s = list(format(i,'09b'))
-    
-        for p in range (9):
-            if s[p] == '0':
-                s[p] = False
-            else:
-                s[p] = True
-
-        M = [[s[8],s[7],s[6]],[s[1],s[0],s[5]],[s[2],s[3],s[4]]]
-        
-        
-        L.append(M)
-        
-    return L
-    
 def List_nxm(n,m):
     """Génère toutes les matrices n x m possibles."""
+    
     L = []
     f = '0'
     f += str(n*m)
@@ -727,7 +545,7 @@ def List_nxm(n,m):
     for k in range(2**(n*m)):
     
         if k % 10000 == 0:
-            print(k," ieme matrice crée")
+            print(k," ième matrice créée")
         s = list(format(k,f))
     
         for p in range (n*m):
@@ -749,9 +567,19 @@ def List_nxm(n,m):
     return L
     
 #____________Filtres
+
+def filtre_diag(L):
+    """Filtre les matrices sans connexions diagonales."""
+    
+    L_filtre =[]
+    for M in L:
+        if Pas_de_motif_diagonale(M):
+            L_filtre.append(M)
+    return L_filtre
     
 def filtre_equiv(L):
     """Filtre les matrices équivalentes par rotation/symétrie."""
+    
     Hist = []
     L_filtre = []
     for M in L:
@@ -772,30 +600,16 @@ def filtre_equiv(L):
 
 def filtre_puzzle(L):
     """Filtre les matrices valides pour le Slitherlink."""
+    
     L_filtre =[]
     for M in L:
         if Verif(M):
             L_filtre.append(M)
     return L_filtre
     
-def filtre_diag(L):
-    """Filtre les matrices sans connexions diagonales."""
-    L_filtre =[]
-    for M in L:
-        if in_pas_diag(M):
-            L_filtre.append(M)
-    return L_filtre
-    
-def filtre_Point(L,marge):
-    """Filtre les matrices selon un critère de points."""
-    L_filtre =[]
-    for M in L:
-        if Point(M) <= marge:
-            L_filtre.append(M)
-    return L_filtre
-    
 def filtre_nombre_modifiable(L,mini,maxi):
-    """Filtre suivant le nombre de case modifiable"""
+    """Filtre suivant le nombre de cases modifiables."""
+    
     L_filtre = []
     for M in L:
         nb_modif = len(List_modifiable(M))
@@ -804,13 +618,23 @@ def filtre_nombre_modifiable(L,mini,maxi):
             
     return L_filtre
     
+def filtre_nombre_bout(L,mini,maxi):
+    """Filtre suivant le nombre de cases modifiables."""
+    
+    L_filtre = []
+    for M in L:
+        nb_modif = len(List_bout(M))
+        if nb_modif >= mini and nb_modif <= maxi:
+            L_filtre.append(M)
+    
 
 
-#___________Test_de_bon_retour_pour_les_critères
+#___________Test de bon retour pour les critères
+## Dans cette partie on essaie de trouver des critères d'esthétisme d'un puzzle avec le nombre de bouts ou le nombre de modifiables
 
-def in_pas_diag(M):
-    """Verifie si une matrice de True est false ne contient pas des True
-    ou False en diagonale (ce qui rend impossible le fait d'être un puzzle SL"""
+def Pas_de_motif_diagonale(M):
+    """Vérifie si une matrice de True et False ne contient pas des True
+    ou False en diagonale (ce qui rend impossible le fait d'être un puzzle Slitherlink). Voir dans le papier : M n'est pas muni d'une CS-coloration."""
     
     res =True
     n,m = len(M),len(M[0])
@@ -829,168 +653,36 @@ def in_pas_diag(M):
         
     return res
 
-def List_3x3_able():
-    """Génère les matrices 3x3 valides pour le grignotage."""
-    L = []
-    for i in range (512):
-    
-        s = list(format(i,'09b'))
-    
-        for p in range (9):
-            if s[p] == '0':
-                s[p] = False
-            else:
-                s[p] = True
-
-        M = [[s[8],s[7],s[6]],[s[1],s[0],s[5]],[s[2],s[3],s[4]]]
-        precedent=s[8]
-        var = 0
-        k = 1
-        
-        while k<9 and var<=2 :
-            if precedent != s[k]:
-                var +=1
-
-            precedent = s[k]
-            k+=1
-
-        is_Croix = (s[0]==s[1]) or (s[0]==s[3]) or (s[0]==s[5]) or (s[0]==s[7])
-        
-        if var <= 2 and is_Croix :
-            L.append(M)
-    
-    return L
-    
-def List_3x3_puzzle():
-    """Génère les matrices 3x3 valides pour le puzzle."""
-
-    L = []
-    for i in range (512):
-    
-        s = list(format(i,'09b'))
-    
-        for p in range (9):
-            if s[p] == '0':
-                s[p] = False
-            else:
-                s[p] = True
-
-        M = [[s[8],s[7],s[6]],[s[1],s[0],s[5]],[s[2],s[3],s[4]]]
-        
-        
-        if Verif(M):
-            L.append(M)
-        
-    return L
-    
-def nb_in(M):
-    """Compte le nombre de True dans une matrice."""
-    n,m = len(M),len(M[0])
-    nb = 0
-    
-    for i in range(n):
-        for j in range(m):
-            if M[i,j]:
-                nb +=1
-                
-    return nb
-    
-def List_in(L):
-    """Compte le nombre de True pour chaque matrice dans une liste."""
-    L_in = []
-    for M in L:
-        L_in.append(nb_in(M))
-        
-    return L_in
-    
-def Sort_nb_in(L,L_in):
-    """Trie une liste de matrices selon le nombre de cases interieurs"""
-    n= len(L)
-    maxi = max(L_in)
-    
-    L_sort = []
-    
-    for i in range(maxi+1):
-        for j in range (n):
-            if L_in[j] == i:
-                L_sort.append(L[j])
-        
-    return L_sort
-
-def Sort_nb_modif(L,mini,maxi):
-    """Trie une liste de matrices selon le nombre de cases interieurs"""
-    n= len(L)
-    maxi = 16
-    
-    L_sort = []
-    
-    for i in range(mini,maxi+1):
-        for j in range (n):
-            if len(List_modifiable(L[j])) == i:
-                L_sort.append(L[j])
-        
-    return L_sort
-
-    
-def Tri(L):
-    """Trie une liste de matrices suivant le nombre de True"""
-    return Sort(L,List_in(L))
-    
-
-def Ligne(M,i):
-    """Retourne une ligne d'une matrice."""
-    return M[i]
-
-def Colonne(M,j):
-    """Retourne une colonne d'une matrice."""
-    n= len(M)
-    C=[]
-    for i in range(n):
-        C.append(M[i][j])
-        
-    return C
-    
-def Moyenne(L,M):
-    """Calcule la moyenne pondérée d'une liste de booléens."""
-    n= len(M)
-    moy=0
-    for Bool in L:
-        if Bool:
-            moy+=1/n
-        else:
-            moy-=1/n
-    
-    return moy
-    
-def Point(M):
-    """Calcule un score de points pour une matrice."""
-    n,m = len(M),len(M[0])
-    pts = 0
-    
-    for i in range(n):
-        pts += abs((Moyenne(Ligne(M,i),M))**2)
-    for j in range(m):
-        pts += abs((Moyenne(Colonne(M,j),M))**2)
-        
-    pts = pts/(n+m)
-    
-    return pts
-    
 def List_modifiable(M):
-    """renvoie une liste des indices des cases modifiable"""
-    n,m = M.shape
+    """Renvoie une liste des indices des cases modifiables."""
+    
+    n,m = len(M),len(M[0])
     L=[]
     
     for i in range(n):
         for j in range(m):
             if modifiable(M,i,j):
-                L.append([i,j])
+                L.append((i,j))
     
     return L
+
+def Tri_par_nb_modifiable(L,mini,maxi):
+    """Trie une liste de matrices selon le nombre de cases intérieures."""
+    
+    l = len(L)
+    L_sort = []
+    
+    for i in range(mini,maxi+1):
+        for j in range (l):
+            if len(List_modifiable(L[j])) == i:
+                L_sort.append(L[j])
+        
+    return L_sort
     
 def List_bout(M):
-    """renvoie une liste des indices des cases qui sont des bout"""
-    n,m = M.shape
+    """Renvoie une liste des indices des cases qui sont des bouts."""
+    
+    n,m = len(M),len(M[0])
     L=[]
     
     for i in range(n):
@@ -1008,94 +700,32 @@ def List_bout(M):
     
     return L
     
+def Tri_par_nb_bout(L,mini,maxi):
+    """Trie une liste de matrices selon le nombre de cases qui sont des bouts."""
+    
+    l = len(L)
+    
+    L_sort = []
+    
+    for i in range(mini,maxi+1):
+        for j in range (l):
+            if len(List_bout(L[j])) == i:
+                L_sort.append(L[j])
+        
+    return L_sort
+    
 
     
 """
 ~~~~~~~~~~~~~~~~~~~
-III - Verifier puzzle
+III - Vérifier puzzle
 ~~~~~~~~~~~~~~~~~~~
 """
 
-#___________Règles
-
-def Rule1(M,NA):
-
-    """
-    Vérifie la règle 1 du Slitherlink.
-    
-    Args:
-        M (list of list): Matrice du puzzle
-        NA (list of list): Matrice des nombres attendus
-        
-    Returns:
-        bool: True si la règle est respectée
-    """
-    
-    n,m = len(M) , len(M[0])
-    i=0
-    res = True
-    
-    while i<n and res:
-        j=0
-        while j<m and res:
-            C = Croix(M,i,j)
-            c=len(C)
-            p=0
-            if M[i][j]:
-                p= 4-c
-                for k in range(c):
-                    if not C[k]:
-                        p+=1
-                print(i,j,NA[i][j],p)
-                if NA[i][j]!=p:
-                    res = False
-    
-            if not M[i][j]:
-                for k in range(c):
-                    if C[k]:
-                        p+=1
-                print(i,j,NA[i][j],p)
-                if NA[i][j]!=p:
-                    res = False
-            j+=1
-        i+=1
-    
-    return res
-
-def Rule1_ind(M,i,j,NA):
-    res = True
-    C = Croix(M,i,j)
-    c=len(C)
-    p=0
-    if M[i][j]:
-        p= 4-c
-        for k in range(c):
-            if not C[k]:
-                p+=1
-        
-            print(i,j,NA[i][j],p)
-        
-            if NA[i][j]!=p:
-                res = False
-
-        if not M[i][j]:
-            for k in range(c):
-                if C[k]:
-                    p+=1
-            print(i,j,NA[i][j],p)
-            if NA[i][j]!=p:
-                res = False
+#___________Solution -> Puzzle
                 
 def Nombre_Arrete(M):
-    """
-    Calcule la matrice des nombres d'arrête.
-    
-    Args:
-        M (list of list): Matrice du puzzle
-        
-    Returns:
-        list of list: Matrice des nombres attendus
-    """
+    """Calcule la matrice des nombres d'arêtes, c'est-à-dire le puzzle associé à la solution (CS-coloration)."""
     
     n,m = len(M) , len(M[0])
     NA =[[0]*m for _ in range(n)]
@@ -1104,34 +734,26 @@ def Nombre_Arrete(M):
         for j in range(m):
             C = Croix(M,i,j)
             c=len(C)
-            n=0
+            n_=0
             if M[i][j]:
-                n= 4-c
+                n_= 4-c
                 for k in range(c):
                     if not C[k]:
-                        n+=1
-                NA[i][j]=n
+                        n_+=1
+                NA[i][j]=n_
                 
             if not M[i][j]:
                 for k in range(c):
                     if C[k]:
-                        n+=1
-                NA[i][j]=n
+                        n_+=1
+                NA[i][j]=n_
     
     return NA
     
-#_______________Règles équivalentes 2 couleurs
+#_______________Vérification CS-coloration
 
 def Hist(M,i,j,L):
-
-    """
-    Crée un historique des cellules connectées.
-    
-    Args:
-        M (list of list): Matrice du puzzle
-        i, j (int): Position de départ
-        L (list): Liste pour stocker l'historique
-    """
+    """Crée un historique des cellules connectées."""
 
     L.append([i,j])
     C = Croix_ind(M,i,j)
@@ -1142,16 +764,7 @@ def Hist(M,i,j,L):
 
     
 def Couche_ext(M):
-
-    """
-    Crée une couche externe pour la vérification.
-    
-    Args:
-        M (list of list): Matrice du puzzle
-        
-    Returns:
-        list of list: Matrice de la couche externe
-    """
+    """Crée une couche externe pour la vérification (pour la connexité de la couleur extérieure)."""
 
     n,m = len(M),len(M[0])
     Couche = [[False]*(m+2) for _ in range(n+2)]
@@ -1164,26 +777,18 @@ def Couche_ext(M):
     return Couche
     
 def Verif(M):
-
-    """
-    Vérifie la validité d'une solution par modélisation 2 couleurs.
-    ie : 1) interieur(I = True) convexe
-         2) exterieur(E = False) + couche externe convexe
-         3) forme une partition de l'ensemble
-    
-    Args:
-        M (list of list): Matrice du puzzle
-        
-    Returns:
-        bool: True si le puzzle est valide
-    """
+    """Vérifie la validité d'une solution par modélisation 2 couleurs.
+    c'est-à-dire : 1) intérieur (I = True) convexe
+                   2) extérieur (E = False) + couche externe convexe
+                   3) forme une partition de l'ensemble
+    (on vérifie ainsi que M soit muni d'une CS-coloration)."""
 
     n,m = len(M),len(M[0])
 
     i,j=0,0
     found = False
     
-    while i<n and not found: #trouver une case à l'interieur
+    while i<n and not found: #trouver une case à l'intérieur
         j=0
         while j<m and not found:
             if M[i][j]:
@@ -1192,15 +797,15 @@ def Verif(M):
             j+=1
         i+=1
 
-    if found == False: #si pas trouvé matrice nulle
+    if found == False: #si pas trouvé, matrice nulle
         return True
     else:
         
-        # Histogramme des cases interieurs
+        # Histogramme des cases intérieures
         L_int=[]
         Hist(M,i,j,L_int)
         
-        # Histogramme des cases exterieurs
+        # Histogramme des cases extérieures
         L_ext=[]
         Couche= Couche_ext(M)
         Hist(Couche,0,0,L_ext)
@@ -1211,45 +816,26 @@ def Verif(M):
 
 """
 ~~~~~~~~~~~~~~~~~~~
-IV - Show puzzle
+IV - Afficher puzzle
 ~~~~~~~~~~~~~~~~~~~
 """
 
 def show(M):
-
-    """
-    Affiche une matrice simple.
-    
-    Args:
-        M (list of list): Matrice à afficher
-    """
+    """Affiche une matrice simple."""
     
     fig, ax = plt.subplots()
     img = ax.imshow(M)
     plt.show()
     
 def show_gris(M):
-
-    """
-    Affiche une matrice simple en echelle de gris.
-    
-    Args:
-        M (list of list): Matrice à afficher
-    """
+    """Affiche une matrice simple en échelle de gris."""
 
     fig, ax = plt.subplots()
     img = ax.imshow(M,cmap='gray')
     plt.show()
 
 def show_2(M,NA):
-
-    """
-    Affiche deux matrices côte à côte.
-    
-    Args:
-        M (list of list): Première matrice
-        NA (list of list): Deuxième matrice
-    """
+    """Affiche deux matrices côte à côte."""
 
     fig1, ax1 = plt.subplots()
     fig2, ax2 = plt.subplots()
@@ -1258,14 +844,7 @@ def show_2(M,NA):
     plt.show()
   
 def show_n(L,n,m):
-
-    """
-    Affiche plusieurs matrices dans une grille de taille n*m.
-    
-    Args:
-        L (list): Liste de matrices
-        n, m (int): Dimensions de la grille d'affichage
-    """
+    """Affiche plusieurs matrices dans une grille de taille n*m."""
 
     l = len(L)
     fig,axs = plt.subplots(n,m)
@@ -1283,15 +862,9 @@ def show_n(L,n,m):
     plt.show()
     
 def show_anim(L, interval=200):
+    """Affiche une animation d'une séquence de matrices."""
+    M = L[0]
     n,m = len(M) , len(M[0])
-    """
-    Affiche une animation d'une séquence de matrices.
-    
-    Args:
-        L (list): Liste de matrices à animer
-        interval (int): Intervalle entre les frames en ms
-    """
-    
     fig, ax = plt.subplots()
     
     vmin = min(np.min(np.array(m)) for m in L)
@@ -1311,26 +884,31 @@ def show_anim(L, interval=200):
     
 """
 ~~~~~~~~~~~~~~~~~~~
-V - Solve puzzle
+V - Solveur
 ~~~~~~~~~~~~~~~~~~~
 """
 
-#_______Brut_Force
-def List_puzzle(n,m):
+#_______Brute Force
+def List_puzzle(n,m, equiv = False):
+    """Fait la liste de tous les puzzles."""
 
     L = List_nxm(n,m)
-    print("L contient ",len(L),"élément")
+    print("L contient ",len(L),"éléments")
     L1 = filtre_diag(L)
     print("filtre_diag : OK ",len(L1))
-    #L2 = filtre_equiv(L1)
-    #print("filtre_equiv : OK ",len(L2))
-    L3 = filtre_puzzle(L1)
+    if equiv:
+        L2 = filtre_equiv(L1)
+        print("filtre_equiv : OK ",len(L2))
+    else:
+        L2 = L1
+    L3 = filtre_puzzle(L2)
     print("filtre_puzzle : OK ",len(L3))
     
     return L3
 
-def Brut_force(Na):
-    """test tout"""
+def brut_force_solver(Na):
+    """Teste tout."""
+    
     n,m = len(Na),len(Na[0])
     
     L = List_puzzle(n,m)
@@ -1346,92 +924,101 @@ def Brut_force(Na):
             print("trouvé !")
             return L[i]
 
-#________Tentative_par_essaie_modifie_avec_heuristique
+#________Tentative par essai-modifié avec heuristique
 
-def Solve_par_essaie_modifie(N,tentative = 100):
-
+def heuristique_solver(N,tentative = 100):
+    """On génère une matrice aléatoirement et avec une heuristique (score) on se rapproche de la solution cherchée (ne marche pas sur plus de 10*10)."""
+    
     n,m = len(N) , len(N[0])
+    print(N)
     
-    #genere une matrice puzzle
+    #génère une matrice puzzle
     
-    M = grignotage_rec(n,m)
-    L = []
+    M = grignotage_rec(n,m) #[[True]*m for _ in range(n)]
+    Historique = []
     
     
     for _ in range(tentative):
         
+        #on vérifie que Na(M) = N
+        Na_m = Nombre_Arrete(M)
+        print("Na_m = ",Na_m)
         
-        #pour voir la progression
+        if solution_trouvé(N, Na_m, n, m) :
+            print('trouvé')
+            return M, Na_m
+        
+        #enregistrer les matrices déjà vues
         M_p = c.deepcopy(M)
-        L.append(M_p)
+        Historique.append(M_p)
         
-        #regarde les modifiables et le score de la matrice
-        L_modif = List_modifiable(M)
-        l_modif = len(L_modif)
-        score = Score(M,N,m,n)
-        print(score,M)
+        #regarde les modifiables
+        #L_modif = List_modifiable(M)
         
-        #On modifie aleatoirement les modifiables jusqu'a ce que le score soit <
-        nb_essaie = 2**(l_modif)
-        while Score(M,N,m,n) <= score and nb_essaie>0:
-            nb_essaie -= 1
-            L_random = List_random(l_modif)
+        #Liste des indices
+        L_modif = liste_ind(n,m)
+        
+        #score de la matrice initiale
+        score_init = Score(M,N,m,n)
+        print("score init = ",score_init,"/ M = ",M)
+        
+        #On modifie aléatoirement les modifiables jusqu'à ce que le score soit le plus petit
+        
+        mini = score_init
+        i_min, j_min = -1,-1
+        
+        for i,j in L_modif :
+            #modification
+            M[i][j] = not M[i][j]
+            M_modif = c.deepcopy(M)
+            #restauration
+            M[i][j] = not M[i][j]
             
-            for k in range(l_modif):
+            score_modif = Score(M_modif,N,m,n)
             
-                i,j = L_modif[k]
+            if score_modif <= mini and (not M_modif in Historique) :
+                mini = score_modif
+                i_min, j_min = i,j
             
-                if L_random == 1:
-                    M[i,j] = True
-                    
-                else:
-                    M[i,j] = False      
                 
-        #si c'est la matrice c'est bon
-        if nb_essaie <=0:
-            print("pas moyen de monter le score")
-            M = grignotage_rec(n,m)
+        #si on n'a pas réussi à trouver plus petit, on est bloqué
+        if i_min == -1:
+            print("pas moyen de descendre le score")
+            return heuristique_solver(N,tentative - 1)
         
-        if Score(M,N,m,n) == n*m:
-            print("trouvé")
-            return M
+        #sinon on prend le score qui minimise
+        else :
+            M[i_min][j_min] = not M[i_min][j_min]
             
-    print("pas trouvé")
-   
-    return L
-                        
+    print("pas trouvé après ", tentative, "descentes de score")
 
-def List_random(n):
-    """Génère aléatoirement une liste de booléen de taille n"""
-    L=[]
-    for i in range (n):
-        ra = r.randint(0,1)
-        
-        if ra == 0:
-            L.append(False)
-        else:
-            L.append(True)
-            
-    return L
     
 def Score(M,Na,n,m):
-
+    """Renvoie la somme des différences entre Na_M et Na."""
+    
     Na_m = Nombre_Arrete(M)
     s = 0
-    
     for i in range(n):
         for j in range(m):
-            if Na_m[i,j] == Na[i,j]:
-                s+=1
+            s+= abs( Na_m[i][j] - Na[i][j] )
                 
     return s
     
-#________Backtracking_Original
+def liste_ind(n,m) :
+    """Renvoie la liste des indices d'une matrice de taille n*m."""
+    
+    L = []
+    for i in range(n):
+        for j in range(m):
+            L.append((i,j))
+    return L
+    
+#________Backtracking Original
         
 class SolutionFound(Exception):
     pass
 
-def solve_SL(Na):
+def backtrack_solver(Na):
     n, m = len(Na), len(Na[0])
     M = [[False]*m for _ in range(n)]
     Na_M = [[0]*m for _ in range(n)]
@@ -1439,11 +1026,11 @@ def solve_SL(Na):
         # on tente d'abord en posant la première case à 1 puis 2
         if Na[0][0] == -1 or Na[0][0] >= 2:
             Na_M,restore = modifie_Na_M(M,Na_M,0,0)
-            rec_brut_SL(M, Na_M, Na, 0, 0, True,n,m)
+            rec_backtrack(M, Na_M, Na, 0, 0, True,n,m)
             Na_M = restore_Na_M(Na_M,restore)
 
         if Na[0][0] == -1 or Na[0][0] <= 2:
-            rec_brut_SL(M, Na_M, Na, 0, 0, False,n,m)
+            rec_backtrack(M, Na_M, Na, 0, 0, False,n,m)
             
         print("Aucune solution trouvée.")
     except SolutionFound:
@@ -1453,7 +1040,7 @@ def solve_SL(Na):
         #print('---')
         return M,Na
         
-def rec_brut_SL(M, Na_M, Na, i, j, Val,n,m):
+def rec_backtrack(M, Na_M, Na, i, j, Val,n,m):
     # sauvegarde pour le backtracking
     prev = M[i][j]
     M[i][j] = Val
@@ -1463,11 +1050,7 @@ def rec_brut_SL(M, Na_M, Na, i, j, Val,n,m):
     #for row in range(n):
         #print(M[row],Na_M[row],Na[row],i,j)
     #print("--")
-
-    # test de solution
-    if solution_trouvé(Na, Na_M, n, m):
-        raise SolutionFound
-
+    
     # avancer dans l'ordre des cases : (i,j) -> next_i, next_j
     # calcule next indices
     next_i, next_j = i, j
@@ -1475,7 +1058,10 @@ def rec_brut_SL(M, Na_M, Na, i, j, Val,n,m):
         next_i, next_j = i+1, j-1
 
     elif i==n-1 and j == m-1:
-        # dernière case ; on a déjà testé l'égalité, donc pas de suite
+            # test de solution
+        if solution_trouvé(Na, Na_M, n, m):
+            raise SolutionFound
+
         # restore et return
         M[i][j] = prev
         return
@@ -1495,18 +1081,18 @@ def rec_brut_SL(M, Na_M, Na, i, j, Val,n,m):
         #modifie Na
         Na_M,restore = modifie_Na_M(M,Na_M,next_i,next_j)
         #applique l'algo sur la prochaine case
-        rec_brut_SL(M, Na_M, Na, next_i, next_j, True,n,m)
+        rec_backtrack(M, Na_M, Na, next_i, next_j, True,n,m)
         # restore l'ancienne valeur de Na_M
         Na_M = restore_Na_M(Na_M,restore)
     if False in E:
-        rec_brut_SL(M, Na_M, Na, next_i, next_j, False,n,m)
+        rec_backtrack(M, Na_M, Na, next_i, next_j, False,n,m)
 
     # backtrack : restaurer l'ancienne valeur avant de retourner
     M[i][j] = prev
 
 #all trouve l'ensemble des solutions
         
-def solve_SL_all(Na):
+def backtrack_solver_all(Na):
     n, m = len(Na), len(Na[0])
     solutions = []  # liste qui contiendra toutes les solutions
     # Initialisation
@@ -1521,7 +1107,7 @@ def solve_SL_all(Na):
         #tourné = True
     #print(score_init(Na))
         
-    def rec_brut_SL_all(M, Na_M, Na, i, j, Val,n,m):
+    def rec_backtrack_all(M, Na_M, Na, i, j, Val,n,m):
         # sauvegarde pour le backtracking
         prev = M[i][j]
         M[i][j] = Val
@@ -1565,12 +1151,12 @@ def solve_SL_all(Na):
             #modifie Na
             Na_M,restore = modifie_Na_M(M,Na_M,next_i,next_j)
             
-            rec_brut_SL_all(M, Na_M, Na, next_i, next_j, True,n,m)
+            rec_backtrack_all(M, Na_M, Na, next_i, next_j, True,n,m)
             
             # restore l'ancienne valeur de Na_M
             Na_M = restore_Na_M(Na_M,restore)
         if False in E:
-            rec_brut_SL_all(M, Na_M, Na, next_i, next_j, False,n,m)
+            rec_backtrack_all(M, Na_M, Na, next_i, next_j, False,n,m)
     
         # backtrack : restaurer l'ancienne valeur avant de retourner
         M[i][j] = prev
@@ -1578,10 +1164,10 @@ def solve_SL_all(Na):
     # Appels initiaux (première case)
     if Na[0][0] >= 2 or Na[0][0] == -1 :
         Na_M, restore = modifie_Na_M(M, Na_M, 0, 0)
-        rec_brut_SL_all(M, Na_M, Na, 0, 0, True,n,m)
+        rec_backtrack_all(M, Na_M, Na, 0, 0, True,n,m)
         Na_M = restore_Na_M(Na_M, restore)   # restauration après retour
     if Na[0][0] <= 2 or Na[0][0] == -1:
-        rec_brut_SL_all(M, Na_M, Na, 0, 0, False,n,m)
+        rec_backtrack_all(M, Na_M, Na, 0, 0, False,n,m)
     
     # Affichage des résultats
     if solutions:
@@ -1626,24 +1212,24 @@ def restore_Na_M(Na_M,restore):
     
 def états_possible(M,Na_M,Na,i,j,n,m):
     E = [True, False]
-    #regarde si il y a une condition bas
+    #regarde s'il y a une condition bas
     c_bas = condition_bas(M,Na_M,Na,i,j)
     if c_bas != 'pas de condition bas':
         E.remove(not c_bas)
 
-    # regarde si il y a une condition a droite
+    # regarde s'il y a une condition à droite
     c_droite = condition_droite(M,Na_M,Na,i,j)
     if c_droite != 'pas de condition droite':
         if c_droite != c_bas:
             E.remove(not c_droite)
             
-    #condition pas de motif de diagonal apparrait
+    #condition pas de motif diagonal apparaît
     choix_qui_forme_diag = condition_non_diag(M,i,j)
     for choix in choix_qui_forme_diag:
         if choix in E:
             E.remove(choix)
 
-    #vérifie qu'il n'y est pas de contradiction et agit en conséquence
+    #vérifie qu'il n'y a pas de contradiction et agit en conséquence
     if not condition_mettre_out(M,Na_M,Na,i,j,n,m) and False in E :
         E.remove(False)
 
@@ -1663,29 +1249,29 @@ def condition_non_diag(M,i,j):
     return E
         
 def condition_bas(M,Na_M,Na,i,j):
-    # l'état en dessous ne pouvant plus être modifier après
+    # l'état en dessous ne pouvant plus être modifié après
     if Na[i-1][j] == -1 or i == 0:
         return 'pas de condition bas'
     else :
         if Na_M[i-1][j] == Na[i-1][j]: #il ne faut plus modifier
-            return False #il faut laissé out
+            return False #il faut laisser out
         else: # il faut le modifier
             return True #il faut mettre in
 
 def condition_droite(M,Na_M,Na,i,j):
-    # état de droit ne pourras être modifier plus que 1 fois après
+    # état de droite ne pourra être modifié plus qu'une fois après
     if Na[i][j-1] == -1 or j == 0:
         return "pas de condition droite"
     else :
         if M[i][j-1] and Na_M[i][j-1] + 2 == Na[i][j-1] : 
-            # si l'etat est in et doit être modifier 2 fois
-            return True #il faut mettre a l'intérieur
+            # si l'état est in et doit être modifié 2 fois
+            return True #il faut mettre à l'intérieur
         elif (not M[i][j-1]) and Na_M[i][j-1] - 2 == Na[i][j-1] :
-            # si l'etat est out et doit être modifier 2 fois
-            return True # il faut mettre a l'interieur
+            # si l'état est out et doit être modifié 2 fois
+            return True # il faut mettre à l'intérieur
         elif Na_M[i][j-1] == Na[i][j-1] :
-            # si l'etat final déjà atteint il ne faut plus le modifier
-            return False #il faut mettre a l'exterieur
+            # si l'état final déjà atteint il ne faut plus le modifier
+            return False #il faut mettre à l'extérieur
         else : # les deux états sont possibles
             return "pas de condition droite"
 
@@ -1699,16 +1285,16 @@ def condition_mettre_out(M,Na_M,Na,i,j,n,m):
         val_si_out = Na_M[i][j]
     
         if i+1 == n and j+1 == m :
-            # On ne plus apporté de modification
+            # On ne peut plus apporter de modification
             return val_si_out == Na[i][j]
         
-        elif j+1 == m : #dernière ligne on ne pourras modifier qu'une fois
+        elif j+1 == m : #dernière ligne on ne pourra modifier qu'une fois
             return Na[i][j] - val_si_out >= 0 and Na[i][j] - val_si_out <= 1
         else : # on ne peut modifier que 2 fois
             return Na[i][j] - val_si_out >= 0 and Na[i][j] - val_si_out <= 2
 
 def condition_mettre_in(M,Na_M,Na,i,j,n,m):
-    # Il faut que la focntion renvoie true sinon il y a contradiction
+    # Il faut que la fonction renvoie true sinon il y a contradiction
     # vérifier qu'il n'y a pas de contradiction si on met in
     if Na[i][j] == -1:
         return True
@@ -1717,17 +1303,17 @@ def condition_mettre_in(M,Na_M,Na,i,j,n,m):
         val_si_in = 4 - Na_M[i][j]
     
         if i+1 == n and j+1 == m :
-            # On ne plus apporté de modification
+            # On ne peut plus apporter de modification
             return val_si_in == Na[i][j]
         
-        elif j+1 == m : #dernière ligne on ne pourras modifier qu'une fois
+        elif j+1 == m : #dernière ligne on ne pourra modifier qu'une fois
             return val_si_in - Na[i][j] >= 0 and val_si_in - Na[i][j] <= 1
         else : #on ne peut modifier que 2 fois
             return val_si_in - Na[i][j] >= 0 and val_si_in - Na[i][j] <= 2
 
 
 def solution_trouvé(Na, Na_M, n, m):
-    #vérifie si la solution trouvé est la bonne
+    #vérifie si la solution trouvée est la bonne
     i = 0
     res = True
     while i<n and res:
@@ -1739,7 +1325,7 @@ def solution_trouvé(Na, Na_M, n, m):
         i += 1
     return res
 
-#_______Solver_Z3
+#_______Solveur Z3
 def z3_solver(Na):
     """
     Na : liste de listes d'entiers (n x m), valeurs dans -1,0,1,2,3,4.
@@ -1747,6 +1333,7 @@ def z3_solver(Na):
       - Pour chaque (i,j), # de voisins (4 directions, hors grille=False) valant not M[i][j] == Na[i][j] (si Na[i][j] != -1)
       - Aucun des deux motifs 2x2 interdits.
     """
+    
     if not Na or not Na[0]:
         return []
     n = len(Na)
@@ -1812,10 +1399,12 @@ def z3_solver(Na):
 
 """
 ~~~~~~~~~~~~~~~~~~~
-VI - Test
+VI - Tests
 ~~~~~~~~~~~~~~~~~~~
 """
-def comparaison_Backtrack_Z3(debut,fin,pas = 5,p = 0,test_par_taille = 1):
+
+def comparaison_Solver(debut,fin,pas = 5,p = 0,test_par_taille = 1):
+    """Fonction permettant de comparer le temps de résolution des solveurs."""
     L_1 = []
     L_2 = []
     T = []
@@ -1826,26 +1415,52 @@ def comparaison_Backtrack_Z3(debut,fin,pas = 5,p = 0,test_par_taille = 1):
             M = generer(i,i,p)
             
             start = time.time()
-            S1 = solve_SL_all(M)
+            S1 = backtrack_solver_all(M)
             end = time.time()
             tot_1 += end-start
             
-            """
+            
             start = time.time()
             S2 = z3_solver(M)
             end = time.time()
             tot_2 += end-start
-            """
+            
         
         L_1.append(tot_1/test_par_taille)
         T.append(i)
-        #L_2.append(tot_2/test_par_taille)
+        L_2.append(tot_2/test_par_taille)
     
     
     plt.plot(T,L_1,color = 'red')
-    #plt.plot(T,L_2,color = 'blue')
+    plt.plot(T,L_2,color = 'blue')
     plt.ylabel('temps')
     plt.xlabel('largeur du puzzle carré')
+    plt.show()
+    
+
+def liens_init_temps(n,N,p):
+    """Teste l'influence de la répartition des cases non indicées sur le temps de résolution pour le backtracking."""
+
+    S = []
+    T = []
+    for _ in range (N) :
+        Na = generer(n,n,p)
+        S.append(score_init(Na))
+        
+        start = time.time()
+        s = backtrack_solver_all(Na)
+        end = time.time()
+        T.append (end-start)
+        
+    compteur = 0
+    for e in S:
+        if e == 0 :
+            compteur += 1
+    print(compteur)
+        
+    plt.plot(S,T,'o',color = 'blue')
+    plt.ylabel('temps')
+    plt.xlabel('score initial')
     plt.show()
     
 def score_init(Na):
@@ -1869,37 +1484,16 @@ def score_init(Na):
         return 0
     else :
         return 1
-
-def liens_init_temps(n,N,p):
-    S = []
-    T = []
-    for _ in range (N) :
-        Na = generer(n,n,p)
-        S.append(score_init(Na))
-        
-        start = time.time()
-        s = solve_SL_all(Na)
-        end = time.time()
-        T.append (end-start)
-        
-    compteur = 0
-    for e in S:
-        if e == 0 :
-            compteur += 1
-    print(compteur)
-        
-    plt.plot(S,T,'o',color = 'blue')
-    plt.ylabel('temps')
-    plt.xlabel('score initiale')
-    plt.show()
     
 """
 ~~~~~~~~~~~~~~~~~~~
-VI - Générer Puzzle
+VII - Générer Puzzle
 ~~~~~~~~~~~~~~~~~~~
 """
 
 def generer(n,m,p= 0):
+    """Génère un puzzle avec une proportion p de cases non indicées."""
+    
     Na = Nombre_Arrete(grignotage_rec(n,m))
     H = []
     
@@ -1910,3 +1504,25 @@ def generer(n,m,p= 0):
             H.append([i,j])
         
     return Na
+    
+def generer_unique_sol(n,m,tentative):
+    """Génération d'une solution puis on enlève tentative indices si cela ne casse pas l'unicité de la solution."""
+    
+    Na = Nombre_Arrete(grignotage_rec(n,m))
+    H = []
+    compteur = 0
+    
+    for _ in range(tentative) :
+        i,j = r.randint(0,n-1), r.randint(0,m-1)
+        
+        if not [i,j] in H :
+            H.append([i,j])
+            na_i_j = Na[i][j]
+            Na[i][j] = -1
+        
+            if not len(backtrack_solver_all(Na)) == 1:
+                Na[i][j] = na_i_j
+            else : 
+                compteur += 1
+    
+    return Na, compteur

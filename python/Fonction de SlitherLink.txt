@@ -2,161 +2,149 @@
 | Slitherlink GAME |
 ====================
 
-# _____________BIBLIOTHEQUE
+# _____________BIBLIOTHÈQUE
 -> matplotlib.pyplot as plt
 -> numpy as np
 -> random as r
 -> copy as c
 -> sys
+-> time
+-> z3
 
 ~~~~~~~~~~~~~~~~~~~
 0 - Fonction utile
 ~~~~~~~~~~~~~~~~~~~
-Croix(M,i,j) -> C
-Croix_ind(M, i, j)   -> C
-Contour(M,i,j) -> C
-Contour_ind(M,i,j) -> C
+Croix(M, i, j) -> C
+Croix_ind(M, i, j) -> C
+Contour(M, i, j) -> C
+Contour_ind(M, i, j) -> C
 
 ~~~~~~~~~~~~~~~~~~~
-I - Generation_puzzle
+I - Génération du puzzle
 ~~~~~~~~~~~~~~~~~~~
 
 #_________________Critère de modifiabilité d'une case
-modifiable(M,i,j) -> bool
+modifiable(M, i, j) -> bool
 
-#_________________METHODE_GRIGNOTAGE_CARRE
+#_________________Grignotage carré
 bordure(nd, nf, md, mf) -> B
-grignotage_carré(M, n, m) -> M
+grignotage_carré(M, n, m, proba=0.8) -> M
 
-#_______________Generation_par_Chemins
-sign(x) ->  - 1 if x < 0 else 1
-chemin (i1,  j1,  i2,  j2) -> W
-generate_chemins(n, m) -> M 
+#_______________Génération par chemins simples
+sign(x) -> -1 if x < 0 else 1
+chemin(i1, j1, i2, j2) -> W
+generation_par_chemins(n, m) -> M
 
-#____Amélioration
-chemin_complexe (i1,  j1,  i2,  j2,  n,  m) -> W
-generate_bruit_chemin(n,  m,  r) -> M  
-generate_chemins_complexes(n, m) -> M
+#_______________Génération par chemins complexes
+chemin_complexe(i1, j1, i2, j2, n, m) -> W
+generation_par_chemins_complexes(n, m) -> M
 
-#__________________Grignotage_récursif
-grignotage_rec(n, m) -> M  
-grignotage_rec_centre(n, m) -> M  
-inverse(M) -> M
-generate_rec (M, i, j, n) -> rec               
-generate_rec_list(M,i,j,L,n) -> rec
+#__________________Grignotage récursif
+grignotage_rec(n, m, N=-1) -> M
+grignotage_aux(M, i, j, n) -> None (récursif)
 
-#______________Methode_Maze
-init_maze(n, m) -> M, Hist 
+#_______________Génération par labyrinthe
+init_labyrinthe(n, m) -> [M, Hist]
 Histo(M) -> Hist
 link(M, i, j) -> L
-generate_maze(n, m) -> M
-homog(M, i, j, val) -> rec
+generation_par_labyrinthe(n, m) -> M
+homog(M, i, j, val) -> None (récursif)
 
-#______________Methode_Mutation
-modifie(M): -> ()
-mutation(N,n,m) -> M
+#_______________Méthode par mutation
+modifie(M) -> None (modifie sur place)
+mutation(N, n, m) -> M
 
 ~~~~~~~~~~~~~~~~~~~
-II - Etudes Dénombrement
+II - Étude de dénombrement
 ~~~~~~~~~~~~~~~~~~~
 
-List_3x3() -> L
-List_nxm(n,m) -> L
-    
+List_nxm(n, m) -> L
+
 #____________Filtres
-filtre_equiv(L) 
-filtre_puzzle(L) 
-filtre_diag(L) 
-filtre_Point(L,marge) 
-filtre_nombre_modifiable(L,mini,maxi)    
+filtre_diag(L) -> L_filtre
+filtre_equiv(L) -> L_filtre
+filtre_puzzle(L) -> L_filtre
+filtre_nombre_modifiable(L, mini, maxi) -> L_filtre
+filtre_nombre_bout(L, mini, maxi) -> L_filtre
 
-#___________Test_de_bon_retour_pour_les_critères
-in_pas_diag(M) -> bool
-List_3x3_able()
-List_3x3_puzzle() 
-nb_in(M) -> nb
-List_in(L) -> L_in
-Sort_nb_in(L,L_in) -> L_sort
-Sort_nb_modif(L,mini,maxi) -> L_sort
-Tri(L) -> Sort(L,List_in(L))
-Ligne(M,i) -> M[i]
-Colonne(M,j) -> C
-Moyenne(L,M) -> moy
-Point(M) -> pts
-List_modifiable(M)-> L
+#___________Test des critères
+Pas_de_motif_diagonale(M) -> bool
+
+List_modifiable(M) -> L
+Tri_par_nb_modifiable(L, mini, maxi) -> L_triée
+
 List_bout(M) -> L
+Tri_par_nb_bout(L, mini, maxi) -> L_triée
 
 ~~~~~~~~~~~~~~~~~~~
-III - Verifier puzzle
+III - Vérifier un puzzle
 ~~~~~~~~~~~~~~~~~~~
 
-#___________Règles
-Rule1(M,NA) -> res
-Rule1_ind(M,i,j,NA) -> bool             
+#___________Solution -> Puzzle
 Nombre_Arrete(M) -> NA
-    
-#_______________Règles équivalentes 2 couleurs
-Hist(M,i,j,L)  -> Hist
+
+#___________Vérification CS-coloration
+Hist(M, i, j, L) -> None (remplit L)
 Couche_ext(M) -> Couche
 Verif(M) -> bool
 
 ~~~~~~~~~~~~~~~~~~~
-IV - Show puzzle
+IV - Visualisation
 ~~~~~~~~~~~~~~~~~~~
 
-show(M) 
-show_gris(M) 
-show_2(M,NA) 
-show_n(L,n,m) 
-show_anim(L, interval=200) 
+show(M)
+show_gris(M)
+show_2(M, NA)
+show_n(L, n, m)
+show_anim(L, interval=200)
 
 ~~~~~~~~~~~~~~~~~~~
-V - Solve puzzle
+V - Solveurs
 ~~~~~~~~~~~~~~~~~~~
 
-List_puzzle(n,m) 
-Brut_force(Na) -> solution
+#___________Recensement de tous les puzzles
+List_puzzle(n, m, equiv=False) -> L
 
-#________Tentative_par_essaie_modifie_avec_heuristique
-Solve_par_essaie_modifie(N,tentative = 100) 
-List_random(n) -> L
-Score(M,Na,n,m) -> s
+#___________Brute force
+brut_force_solver(Na) -> M (ou None)
 
-#_________Backtracking_Original
-solve_SL(Na) -> Une solution M
-rec_brut_SL(M, Na_M, Na, i, j, Val)
+#___________Heuristique (essais-modifications)
+heuristique_solver(N, tentative=100) -> (M, Na_M) ou None
+Score(M, Na, n, m) -> s
+liste_ind(n, m) -> L
 
-solve_SL_all(Na): -> L'ensemble des solutions L
-rec_brut_SL_all(M, Na_M, Na, i, j, Val):
+#___________Backtracking original
+backtrack_solver(Na) -> (M, Na)
+rec_backtrack(M, Na_M, Na, i, j, Val, n, m) -> None
 
-modifie_Na_M(M,Na_M,i,j) -> Na_M,restore  
-restore_Na_M(Na_M,restore) -> Na_M
-    
-états_possible(M,Na_M,Na,i,j) -> Liste des états possibles
-condition_non_diag(M,i,j):
-condition_bas(M,Na_M,Na,i,j):
-condition_droite(M,Na_M,Na,i,j):
-condition_mettre_out(M,Na_M,Na,i,j):
-condition_mettre_in(M,Na_M,Na,i,j):
-solution_trouvé(Na, Na_M, n, m): -> bool
+backtrack_solver_all(Na) -> list of solutions M
+rec_backtrack_all(M, Na_M, Na, i, j, Val, n, m) -> None
 
-#________Solver_Z3
+modifie_Na_M(M, Na_M, i, j) -> (Na_M, restore)
+restore_Na_M(Na_M, restore) -> Na_M
 
-z3_solver(Na)
+états_possible(M, Na_M, Na, i, j, n, m) -> E (list of bool)
+condition_non_diag(M, i, j) -> E
+condition_bas(M, Na_M, Na, i, j) -> 'pas de condition bas' / bool
+condition_droite(M, Na_M, Na, i, j) -> 'pas de condition droite' / bool
+condition_mettre_out(M, Na_M, Na, i, j, n, m) -> bool
+condition_mettre_in(M, Na_M, Na, i, j, n, m) -> bool
+solution_trouvé(Na, Na_M, n, m) -> bool
 
-
-"""
-~~~~~~~~~~~~~~~~~~~
-VI - Test
-~~~~~~~~~~~~~~~~~~~
-"""
-comparaison_Backtrack_Z3(debut,fin,pas = 5,p = 0,test_par_taille = 1)
-
-score_init(Na):
-liens_init_temps(n,N,p):
+#___________Solveur Z3
+z3_solver(Na) -> list of solutions M
 
 ~~~~~~~~~~~~~~~~~~~
-VII - Générer Puzzle
+VI - Tests
 ~~~~~~~~~~~~~~~~~~~
 
-generer(n,m,p= 0)
+comparaison_Solver(debut, fin, pas=5, p=0, test_par_taille=1)
+score_init(Na) -> 0 ou 1
+liens_init_temps(n, N, p)
+
+~~~~~~~~~~~~~~~~~~~
+VII - Générer des puzzles
+~~~~~~~~~~~~~~~~~~~
+
+generer(n, m, p=0) -> Na
+generer_unique_sol(n, m, tentative) -> (Na, compteur)
