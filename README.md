@@ -313,5 +313,5 @@ Les articles scientifiques sont disponibles dans `Source/` :
 - [x] Benchmarks comparatifs
 - [x] Visualiseur interactif Pygame
 - [x] Critère de modifiabilité et filtres de puzzles
-- [ ] Interface de résolution intégrée au visualiseur
+- [x] Interface de résolution intégrée au visualiseur
 - [ ] Export / import de puzzles (format standard)
