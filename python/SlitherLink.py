@@ -906,7 +906,7 @@ def List_puzzle(n,m, equiv = False):
     
     return L3
 
-def brut_force_solver(Na):
+def brut_force_solveur(Na):
     """Teste tout."""
     
     n,m = len(Na),len(Na[0])
@@ -926,7 +926,7 @@ def brut_force_solver(Na):
 
 #________Tentative par essai-modifié avec heuristique
 
-def heuristique_solver(N,tentative = 100):
+def heuristique_solveur(N,tentative = 100):
     """On génère une matrice aléatoirement et avec une heuristique (score) on se rapproche de la solution cherchée (ne marche pas sur plus de 10*10)."""
     
     n,m = len(N) , len(N[0])
@@ -934,7 +934,16 @@ def heuristique_solver(N,tentative = 100):
     
     #génère une matrice puzzle
     
-    M = grignotage_rec(n,m) #[[True]*m for _ in range(n)]
+    #M = grignotage_rec(n,m) #[[True]*m for _ in range(n)]
+    M = [[True]*m for _ in range(n)]
+    
+    for i in range(n):
+        for j in range(m):
+            if r.random() < 0.5:
+                M[i][j] = True
+            else:
+                M[i][j] = False
+    
     Historique = []
     
     
@@ -984,7 +993,7 @@ def heuristique_solver(N,tentative = 100):
         #si on n'a pas réussi à trouver plus petit, on est bloqué
         if i_min == -1:
             print("pas moyen de descendre le score")
-            return heuristique_solver(N,tentative - 1)
+            return heuristique_solveur(N,tentative - 1)
         
         #sinon on prend le score qui minimise
         else :
@@ -1018,7 +1027,7 @@ def liste_ind(n,m) :
 class SolutionFound(Exception):
     pass
 
-def backtrack_solver(Na):
+def backtrack_solveur(Na):
     n, m = len(Na), len(Na[0])
     M = [[False]*m for _ in range(n)]
     Na_M = [[0]*m for _ in range(n)]
@@ -1092,7 +1101,7 @@ def rec_backtrack(M, Na_M, Na, i, j, Val,n,m):
 
 #all trouve l'ensemble des solutions
         
-def backtrack_solver_all(Na):
+def backtrack_solveur_all(Na):
     n, m = len(Na), len(Na[0])
     solutions = []  # liste qui contiendra toutes les solutions
     # Initialisation
@@ -1126,7 +1135,7 @@ def backtrack_solver_all(Na):
         elif i==n-1 and j == m-1:
             # dernière case ; on a déjà testé l'égalité, donc pas de suite
             # test de solution
-            if solution_trouvé(Na, Na_M, n, m) : #and Verif(M):
+            if solution_trouvé(Na, Na_M, n, m) and Verif(M):
                 #if tourné :
                     #M = np.rot90(M,k=2).tolist()
                 solutions.append([row[:] for row in M])
@@ -1326,7 +1335,7 @@ def solution_trouvé(Na, Na_M, n, m):
     return res
 
 #_______Solveur Z3
-def z3_solver(Na):
+def z3_solveur(Na):
     """
     Na : liste de listes d'entiers (n x m), valeurs dans -1,0,1,2,3,4.
     Retourne la liste de toutes les grilles M (booléennes) qui vérifient :
@@ -1341,7 +1350,7 @@ def z3_solver(Na):
 
     # Variables booléennes pour chaque cellule
     M = [[z3.Bool(f"M_{i}_{j}") for j in range(m)] for i in range(n)]
-    solver = z3.Solver()
+    solveur = z3.Solver()
 
     # Directions orthogonales
     dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
@@ -1360,26 +1369,26 @@ def z3_solver(Na):
             # Compte combien de voisins valent (not M[i][j])
             somme = z3.Sum([z3.If(v != M[i][j], 1, 0) for v in voisins])
             if Na[i][j] != -1:
-                solver.add(somme == Na[i][j])
+                solveur.add(somme == Na[i][j])
 
     # Contraintes anti-motifs 2x2
     for i in range(n - 1):
         for j in range(m - 1):
             # Motif 1 : [[True, False], [False, True]]
-            solver.add(z3.Not(z3.And(M[i][j] == True,
+            solveur.add(z3.Not(z3.And(M[i][j] == True,
                                M[i][j+1] == False,
                                M[i+1][j] == False,
                                M[i+1][j+1] == True)))
             # Motif 2 : [[False, True], [True, False]]
-            solver.add(z3.Not(z3.And(M[i][j] == False,
+            solveur.add(z3.Not(z3.And(M[i][j] == False,
                                M[i][j+1] == True,
                                M[i+1][j] == True,
                                M[i+1][j+1] == False)))
 
     # Collecte de toutes les solutions
     solutions = []
-    while solver.check() == z3.sat:
-        model = solver.model()
+    while solveur.check() == z3.sat:
+        model = solveur.model()
         sol = [[z3.is_true(model[M[i][j]]) for j in range(m)] for i in range(n)]
         solutions.append(sol)
 
@@ -1392,7 +1401,7 @@ def z3_solver(Na):
                     bloc.append(z3.Not(M[i][j]))
                 else:
                     bloc.append(M[i][j])
-        solver.add(z3.Or(bloc))
+        solveur.add(z3.Or(bloc))
 
     return solutions
 
@@ -1403,36 +1412,46 @@ VI - Tests
 ~~~~~~~~~~~~~~~~~~~
 """
 
-def comparaison_Solver(debut,fin,pas = 5,p = 0,test_par_taille = 1):
+def comparaison_solveur(debut,fin,pas = 5,p = 0,test_par_taille = 1):
     """Fonction permettant de comparer le temps de résolution des solveurs."""
     L_1 = []
     L_2 = []
+    L_3 = []
     T = []
     for i in range(debut,fin,pas) :
         tot_1=0
         tot_2=0
+        tot_3=0
         for _ in range (test_par_taille) :
             M = generer(i,i,p)
             
             start = time.time()
-            S1 = backtrack_solver_all(M)
+            S1 = backtrack_solveur_all(M)
             end = time.time()
             tot_1 += end-start
             
             
             start = time.time()
-            S2 = z3_solver(M)
+            S2 = z3_solveur(M)
             end = time.time()
             tot_2 += end-start
             
+            start = time.time()
+            S3 = heuristique_solveur(M)
+            end = time.time()
+            tot_3 += end-start
+            
         
         L_1.append(tot_1/test_par_taille)
-        T.append(i)
         L_2.append(tot_2/test_par_taille)
+        L_3.append(tot_3/test_par_taille)
+        T.append(i)
+        
     
     
     plt.plot(T,L_1,color = 'red')
     plt.plot(T,L_2,color = 'blue')
+    plt.plot(T,L_3,color = 'green')
     plt.ylabel('temps')
     plt.xlabel('largeur du puzzle carré')
     plt.show()
@@ -1448,7 +1467,7 @@ def liens_init_temps(n,N,p):
         S.append(score_init(Na))
         
         start = time.time()
-        s = backtrack_solver_all(Na)
+        s = backtrack_solveur_all(Na)
         end = time.time()
         T.append (end-start)
         
@@ -1484,7 +1503,39 @@ def score_init(Na):
         return 0
     else :
         return 1
+        
+def proportion_ind(nb,N = 100):
+    """calcul la proportion de 0,1,2,3 et 4 dans un puzzle généré aléatoirement"""
     
+    Compteur = [[0]*5 for _ in range(nb)]
+    
+    for n in range(3,nb+3):
+    
+        for _ in range(N):
+            Na = Nombre_Arrete(mutation(n*n,n,n))
+            for i in range(n):
+                for j in range(n):
+                    Compteur[n-3][Na[i][j]] += 1/(N*n*n)
+    
+    for n in range(3,nb+3):
+        plt.plot([0,1,2,3,4], Compteur[n-3])
+    
+    plt.show()
+    
+    Moy = [0]*5
+    
+    for k in range(5):
+        for n in range(3,nb+3):
+            Moy[k] += Compteur[n-3][k]/nb
+    
+    
+    return Moy   # environ [0.11020918761673644, 0.3322940755030184, 0.38178673579356437, 0.17331906951263848, 0.002390931574037635] pour mutation
+
+        
+#generation_par_chemins_complexes(n,n)
+#grignotage_rec(n,n)
+#mutation(n*n,n,n)
+
 """
 ~~~~~~~~~~~~~~~~~~~
 VII - Générer Puzzle
@@ -1520,9 +1571,52 @@ def generer_unique_sol(n,m,tentative):
             na_i_j = Na[i][j]
             Na[i][j] = -1
         
-            if not len(backtrack_solver_all(Na)) == 1:
+            if not len(backtrack_solveur_all(Na)) == 1:
                 Na[i][j] = na_i_j
             else : 
                 compteur += 1
     
     return Na, compteur
+    
+
+    
+def generer_random(n,m):
+    """fait aléatoirement un puzzle jusqu'a ce qu'il y est au moins une solution"""
+    # il y a rarement unicité de la solution
+    Na = [[0]*m for _ in range(n)]
+    H = []
+    compteur = 0
+    
+    for i in range(n):
+        for j in range(m):
+            p = r.random()
+            if p < 0.11020918761673644:
+                Na[i][j] = 0
+            elif p < 0.442503263:
+                Na[i][j] = 1
+            elif p < 0.824289999:
+                Na[i][j] = 2
+            else:
+                Na[i][j] = 3
+                
+    for _ in range(int(n*m)) :
+        i,j = r.randint(0,n-1), r.randint(0,m-1)
+        
+        if not [i,j] in H :
+            H.append([i,j])
+            na_i_j = Na[i][j]
+            Na[i][j] = -1
+            
+            nb_sol = len(backtrack_solveur_all(Na))
+        
+            if nb_sol > 5:
+                Na[i][j] = na_i_j
+            
+            elif nb_sol != 0:
+                return Na,compteur
+
+            else : 
+                compteur += 1
+    
+    print('echec')
+    return None

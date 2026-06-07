@@ -106,18 +106,18 @@ V - Solveurs
 List_puzzle(n, m, equiv=False) -> L
 
 #___________Brute force
-brut_force_solver(Na) -> M (ou None)
+brut_force_solveur(Na) -> M (ou None)
 
 #___________Heuristique (essais-modifications)
-heuristique_solver(N, tentative=100) -> (M, Na_M) ou None
+heuristique_solveur(N, tentative=100) -> (M, Na_M) ou None
 Score(M, Na, n, m) -> s
 liste_ind(n, m) -> L
 
 #___________Backtracking original
-backtrack_solver(Na) -> (M, Na)
+backtrack_solveur(Na) -> (M, Na)
 rec_backtrack(M, Na_M, Na, i, j, Val, n, m) -> None
 
-backtrack_solver_all(Na) -> list of solutions M
+backtrack_solveur_all(Na) -> list of solutions M
 rec_backtrack_all(M, Na_M, Na, i, j, Val, n, m) -> None
 
 modifie_Na_M(M, Na_M, i, j) -> (Na_M, restore)
@@ -132,13 +132,13 @@ condition_mettre_in(M, Na_M, Na, i, j, n, m) -> bool
 solution_trouvé(Na, Na_M, n, m) -> bool
 
 #___________Solveur Z3
-z3_solver(Na) -> list of solutions M
+z3_solveur(Na) -> list of solutions M
 
 ~~~~~~~~~~~~~~~~~~~
 VI - Tests
 ~~~~~~~~~~~~~~~~~~~
 
-comparaison_Solver(debut, fin, pas=5, p=0, test_par_taille=1)
+comparaison_solveur(debut, fin, pas=5, p=0, test_par_taille=1)
 score_init(Na) -> 0 ou 1
 liens_init_temps(n, N, p)
 

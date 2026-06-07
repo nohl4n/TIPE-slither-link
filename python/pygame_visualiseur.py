@@ -65,7 +65,7 @@ class Theme:
             self.slider_border = (120, 120, 140)
             self.slider_knob = (150, 150, 200)
         else:
-            self.bg = (245, 245, 250)
+            self.bg = (255, 255, 255)
             self.interface_bg = (220, 220, 235)
             self.text_color = (0, 0, 0)
             self.grid_color = (100, 100, 120)
@@ -367,11 +367,11 @@ class SlitherLinkGame:
         solutions = []
         try:
             if method == "backtrack":
-                solutions = sl.backtrack_solver_all(Na)
+                solutions = sl.backtrack_solveur_all(Na)
             elif method == "z3":
-                solutions = sl.z3_solver(Na)
+                solutions = sl.z3_solveur(Na)
             elif method == "heuristique":
-                res = sl.heuristique_solver(Na, tentative=100)
+                res = sl.heuristique_solveur(Na, tentative=100)
                 if res:
                     solutions = [res[0]]
         except Exception as e:
